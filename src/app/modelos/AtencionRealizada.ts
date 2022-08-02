@@ -1,0 +1,22 @@
+export class AtencionRealizada {
+
+  public IDATENCION_REALIZADA: number;
+  public IDSOLICITUD: number;
+  public OBSERVACIONES: string;
+  public ATENCION_EXITOSA: boolean;
+  public RECOMENDACIONES_A_CLIENTE: string;
+
+  constructor(
+    IDATENCION_REALIZADA: number,
+    IDSOLICITUD: number,
+    OBSERVACIONES: string,
+    ATENCION_EXITOSA: boolean,
+    RECOMENDACIONES_A_CLIENTE: string
+  ) {
+    this.IDATENCION_REALIZADA = IDATENCION_REALIZADA;
+    this.IDSOLICITUD = IDSOLICITUD;
+    this.OBSERVACIONES = OBSERVACIONES;
+    this.ATENCION_EXITOSA = ATENCION_EXITOSA;
+    this.RECOMENDACIONES_A_CLIENTE = RECOMENDACIONES_A_CLIENTE;
+  }
+}
