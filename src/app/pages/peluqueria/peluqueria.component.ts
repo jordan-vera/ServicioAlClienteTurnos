@@ -32,6 +32,7 @@ export class PeluqueriaComponent implements OnInit {
   public turnoSeleccionadoShow: boolean = false;
   public solicitudCreate: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0);
   public persona: Persona = new Persona(0, '', '', '', '')
+  public personaEmail: Persona = new Persona(0, '', '', '', '')
   public cliente: Cliente = new Cliente(0, 0, null);
   public cantidadNumeroDiaUltimaSolicitud: number = 0;
 
@@ -65,14 +66,28 @@ export class PeluqueriaComponent implements OnInit {
           this.siTieneSeguroMortuorio = "existe";
           this.nombrePersonaConsultada = response.data.NOMBREUNIDO;
           this.emailPersonaConsultada = response.data.email;
+          this.actualizarEmail()
           this.VerificarSiExitePersona();
           this.getSolicitudesAlmacenadas();
+          this.actualizarEmail();
         } else {
           this.siTieneSeguroMortuorio = "noexiste"
         }
       }, error => {
         this.spinner.hide();
         console.log(error);
+      }
+    )
+  }
+
+  actualizarEmail(): void {
+    this.personaEmail.IDENTIFICACION = this.identificacion;
+    this.personaEmail.EMAIL = this.emailPersonaConsultada;
+    this._solicitudService.updateEmailPersona(this.personaEmail).subscribe(
+      response => {
+
+      }, error => {
+        console.log(error)
       }
     )
   }

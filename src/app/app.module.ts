@@ -16,13 +16,16 @@ import { SucursalesService } from './servicios/sucursales.service';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 // Import library module
 import { NgxSpinnerModule } from "ngx-spinner";
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
+import { CalificacionComponent } from './pages/calificacion/calificacion.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     BienvenidaComponent,
     OdontologiaComponent,
-    PeluqueriaComponent
+    PeluqueriaComponent,
+    CalificacionComponent
   ],
   imports: [
     BrowserModule,
@@ -36,7 +39,8 @@ import { NgxSpinnerModule } from "ngx-spinner";
     HorariosService,
     ServicioTurnosService,
     SolicitudService,
-    SucursalesService
+    SucursalesService,
+    { provide: LocationStrategy, useClass: HashLocationStrategy }
   ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

@@ -5,6 +5,7 @@ import { environment } from 'src/environments/environment';
 import { Persona } from '../modelos/Persona';
 import { Cliente } from '../modelos/Cliente';
 import { Solicitud } from '../modelos/Solicitud';
+import { Calificacion } from '../modelos/Calificacion';
 const base_url = environment.base_url_api_go_turnos;
 
 @Injectable({
@@ -77,6 +78,18 @@ export class SolicitudService {
   deleteSolicitud(idsolicitud: number): Observable<any> {
     let headers = new HttpHeaders().set('Content-Type', 'application/json');
     return this._http.delete(this.url + 'eliminar-solicitud/' + idsolicitud, { headers: headers });
+  }
+
+  updateEmailPersona(data: Persona): Observable<any> {
+    let params = JSON.stringify(data);
+    let headers = new HttpHeaders().set('Content-Type', 'application/json');
+    return this._http.put(this.url + 'persona-email', params, { headers: headers });
+  }
+
+  createCalificacion(data: Calificacion): Observable<any> {
+    let params = JSON.stringify(data);
+    let headers = new HttpHeaders().set('Content-Type', 'application/json');
+    return this._http.post(this.url + 'calificacion', params, { headers: headers });
   }
 
 }

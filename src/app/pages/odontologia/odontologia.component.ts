@@ -35,6 +35,7 @@ export class OdontologiaComponent implements OnInit {
   public persona: Persona = new Persona(0, '', '', '', '')
   public cliente: Cliente = new Cliente(0, 0, null);
   public cantidadNumeroDiaUltimaSolicitud: number = 0;
+  public personaEmail: Persona = new Persona(0, '', '', '', '')
 
   //datos de persona
   public identificacion: string = '';
@@ -67,14 +68,30 @@ export class OdontologiaComponent implements OnInit {
         if (response.response == "SI EXISTE") {
           this.siTieneSeguroMortuorio = "existe";
           this.nombrePersonaConsultada = response.data.NOMBREUNIDO;
-          this.emailPersonaConsultada = response.data.email
+          this.emailPersonaConsultada = response.data.email;
+          this.persona.NOMBRES = response.data.NOMBREUNIDO;
+          this.persona.EMAIL = response.data.email;
+          this.persona.IDENTIFICACION = response.data.identificacion;
           this.VerificarSiExitePersona();
+          //this.actualizarEmail();
         } else {
           this.siTieneSeguroMortuorio = "noexiste"
         }
       }, error => {
         this.spinner.hide();
         console.log(error);
+      }
+    )
+  }
+
+  actualizarEmail(): void {
+    this.personaEmail.IDENTIFICACION = this.identificacion;
+    this.personaEmail.EMAIL = this.emailPersonaConsultada;
+    this._solicitudService.updateEmailPersona(this.personaEmail).subscribe(
+      response => {
+
+      }, error => {
+        console.log(error)
       }
     )
   }
@@ -105,6 +122,7 @@ export class OdontologiaComponent implements OnInit {
             response => {
               this.spinner.hide();
               this.solicitudesAlmacenadas = response.response;
+              console.log(response)
               if (response.response) {
                 this.getUltimaSolicitudEnviada(this.solicitudCreate.IDCLIENTE);
               } else {
@@ -206,8 +224,10 @@ export class OdontologiaComponent implements OnInit {
     this.spinner.show();
     this._solicitudService.getpersonaPorCedula(this.identificacion).subscribe(
       response => {
+        console.log(response);
         this.spinner.hide();
         if (response.error) {
+          console.log("no existe");
           this.agregarPersonaCliente();
         } else {
           var idpersona = response.response.IDPERSONA;
@@ -237,8 +257,11 @@ export class OdontologiaComponent implements OnInit {
     this.spinner.show();
     this._solicitudService.createPersona(this.persona).subscribe(
       response => {
+        console.log(response);
         this.spinner.hide();
-        this.agregarCliente(response.idpersona);
+        setTimeout(() => {
+          this.agregarCliente(response.idpersona);
+        }, 2000);
       }, error => {
         this.spinner.hide();
         console.log(error);
@@ -252,6 +275,7 @@ export class OdontologiaComponent implements OnInit {
     this.spinner.show();
     this._solicitudService.createCliente(this.cliente).subscribe(
       response => {
+        console.log(response);
         this.spinner.hide();
       }, error => {
         this.spinner.hide();
