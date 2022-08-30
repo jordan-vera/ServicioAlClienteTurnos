@@ -63,11 +63,11 @@
         </div>
 
         <button class="btn btn-primary w-100 mt-3" (click)="EnviarSolicitud()"
-          *ngIf="cantidadNumeroDiaUltimaSolicitud > 7 && siTieneSeguroMortuorio == 'existe'">
+          *ngIf="cantidadNumeroDiaUltimaSolicitud > 7">
           <i class="fas fa-calendar-check"></i> Generar Cita
         </button>
         <span class="badge rounded-pill bg-warning text-dark p-2 w-100"
-          *ngIf="cantidadNumeroDiaUltimaSolicitud < 8 && siTieneSeguroMortuorio == 'existe'">Faltan
+          *ngIf="cantidadNumeroDiaUltimaSolicitud < 8">Faltan
           {{8 - cantidadNumeroDiaUltimaSolicitud}} días para solicitar un nuevo turno</span>
       </div>
 
@@ -95,8 +95,8 @@
               <span class="badge bg-danger" *ngIf="x.ESTADO == 'Ausente'">{{x.ESTADO}}</span>
             </td>
             <td>{{x.SUCURSAL}}</td>
-            <td *ngIf="x.ESTADO == 'Pendiente'">
-              <button class="btn btn-danger btn-sm" (click)="cancelarSolicitud(x.IDSOLICITUD)">
+            <td>
+              <button class="btn btn-danger btn-sm" (click)="cancelarSolicitud(x.IDSOLICITUD)" *ngIf="x.ESTADO == 'Pendiente'">
                 <i class="fas fa-window-close"></i> Cancelar
               </button>
             </td>

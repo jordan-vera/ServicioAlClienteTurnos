@@ -161,32 +161,40 @@ export class OdontologiaComponent implements OnInit {
   }
 
   EnviarSolicitud(): void {
-    this.solicitudCreate.FECHATURNO = this.getFechaTurno();
-    this.solicitudCreate.FECHA = Fechac.fechaActual() + ' ' + Fechac.horaActual();
-    this.solicitudCreate.ESTADO = "Pendiente";
-    this.solicitudCreate.IDSERVICIO = 2;
-    this.solicitudCreate.IDSUCURSAL = +this.solicitudCreate.IDSUCURSAL;
-    this.spinner.show();
-    this._solicitudService.getIdClientePorIdentificacion(this.identificacion).subscribe(
-      response => {
-        this.spinner.hide();
-        this.solicitudCreate.IDCLIENTE = response.idcliente;
-        this.solicitudCreate.IDPROFESIONAL = 1;
-        this._solicitudService.createSolicitud(this.solicitudCreate).subscribe(
+    if (this.solicitudCreate.IDSUCURSAL == 0 || this.solicitudCreate.IDSUCURSAL == null) {
+      Swal.fire('Selecciona la sucursal!', '', 'error');
+    } else {
+      if (this.fechaSeleccionada == "" || this.fechaSeleccionada == null) {
+        Swal.fire('Selecciona la día!', '', 'error');
+      } else {
+        this.solicitudCreate.FECHATURNO = this.getFechaTurno();
+        this.solicitudCreate.FECHA = Fechac.fechaActual() + ' ' + Fechac.horaActual();
+        this.solicitudCreate.ESTADO = "Pendiente";
+        this.solicitudCreate.IDSERVICIO = 2;
+        this.solicitudCreate.IDSUCURSAL = +this.solicitudCreate.IDSUCURSAL;
+        this.spinner.show();
+        this._solicitudService.getIdClientePorIdentificacion(this.identificacion).subscribe(
           response => {
-            this.enviarNotificacion();
-            Swal.fire('Solicitud finalizada con exito!!', '', 'success');
-            this.limpiarForm();
-            this.getSolicitudesAlmacenadas()
+            this.spinner.hide();
+            this.solicitudCreate.IDCLIENTE = response.idcliente;
+            this.solicitudCreate.IDPROFESIONAL = 1;
+            this._solicitudService.createSolicitud(this.solicitudCreate).subscribe(
+              response => {
+                this.enviarNotificacion();
+                Swal.fire('Solicitud finalizada con exito!!', '', 'success');
+                this.limpiarForm();
+                this.getSolicitudesAlmacenadas()
+              }, error => {
+                console.log(error);
+              }
+            )
           }, error => {
+            this.spinner.hide();
             console.log(error);
           }
         )
-      }, error => {
-        this.spinner.hide();
-        console.log(error);
       }
-    )
+    }
   }
 
   enviarNotificacion(): void {
@@ -299,10 +307,22 @@ export class OdontologiaComponent implements OnInit {
     this.spinner.show();
     this._solicitudService.getSolicitudPorFechaTurno(fecha, 2).subscribe(
       response => {
+        this.horariosDeServicio = [];
         this.spinner.hide();
         this.solicitudesRealizadas = response.response;
         if (response.error) {
-          this.horariosDeServicio = this.horariosAll
+          for (let k = 0; k < this.horariosAll.length; k++) {
+            if (Fechac.fechaActual() == fecha) {
+              var hora = +this.horariosAll[k].HORARIO.split(":")[0];
+              var horaSistema = +Fechac.horaActual().split(":")[0]
+              if (hora > horaSistema) {
+                this.horariosDeServicio.push(this.horariosAll[k]);
+              }
+            } else {
+              this.horariosDeServicio.push(this.horariosAll[k]);
+            }
+          }
+
         } else {
           this.horariosDeServicio = [];
           var estado = true;
@@ -313,7 +333,13 @@ export class OdontologiaComponent implements OnInit {
               }
             }
             if (estado == true) {
-              this.horariosDeServicio.push(this.horariosAll[k]);
+              if (Fechac.fechaActual() == fecha) {
+                var hora = +this.horariosAll[k].HORARIO.split(":")[0];
+                var horaSistema = +Fechac.horaActual().split(":")[0]
+                if (hora > horaSistema) {
+                  this.horariosDeServicio.push(this.horariosAll[k]);
+                }
+              }
             }
             estado = true;
           }
@@ -338,7 +364,6 @@ export class OdontologiaComponent implements OnInit {
     )
   }
 
-  /*
   calcularHorasActuales(): void {
     var horaActual = Fechac.horaActual();
     var turnoHora = +horaActual.split(":")[0];
@@ -354,7 +379,6 @@ export class OdontologiaComponent implements OnInit {
       this.horariosAll = this.horariosFiltrados;
     }
   }
-  */
 
   getCantidadHorarios(): void {
     this.spinner.show();
@@ -400,7 +424,7 @@ export class OdontologiaComponent implements OnInit {
             mes = Fechac.obtenerDiaDelMesMaIncremento(contador)[2];
             anio = Fechac.obtenerDiaDelMesMaIncremento(contador)[3];
           } else {
-            contador = contador + 1;
+            contador = contador + 0;
             diaExport = +Fechac.obtenerDiaDelMesMaIncremento(contador)[0];
             nombreDelDia = Fechac.obtenerDiaDelMesMaIncremento(contador)[1];
             mes = Fechac.obtenerDiaDelMesMaIncremento(contador)[2];

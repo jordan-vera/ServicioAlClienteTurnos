@@ -92,4 +92,12 @@ export class SolicitudService {
     return this._http.post(this.url + 'calificacion', params, { headers: headers });
   }
 
+  enviarEmailSolicitud(email: string, fecha: string, servicio: string, nombres: string): Observable<any> {
+    return this._http.get(base_url + 'enviar-email/' + email + '/' + fecha + '/' + servicio + '/' + nombres);
+  }
+
+  actualizarEmailCelular(identificacion: string): Observable<any> {
+    return this._http.get(this.url + 'actualizar-email/' + identificacion);
+  }
+
 }

@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
 import { BienvenidaComponent } from './pages/bienvenida/bienvenida.component';
 import { CalificacionComponent } from './pages/calificacion/calificacion.component';
+import { ConsultaMedicaComponent } from './pages/consulta-medica/consulta-medica.component';
 import { OdontologiaComponent } from './pages/odontologia/odontologia.component';
 import { PeluqueriaComponent } from './pages/peluqueria/peluqueria.component';
 
@@ -17,6 +18,10 @@ const routes: Routes = [
   {
     path: "peluqueria",
     component: PeluqueriaComponent
+  },
+  {
+    path: "consulta-medica",
+    component: ConsultaMedicaComponent
   },
   {
     path: "calificacion/:idsolicitud/:calificacion",

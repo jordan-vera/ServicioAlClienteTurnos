@@ -18,6 +18,7 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { NgxSpinnerModule } from "ngx-spinner";
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { CalificacionComponent } from './pages/calificacion/calificacion.component';
+import { ConsultaMedicaComponent } from './pages/consulta-medica/consulta-medica.component';
 
 @NgModule({
   declarations: [
@@ -25,7 +26,8 @@ import { CalificacionComponent } from './pages/calificacion/calificacion.compone
     BienvenidaComponent,
     OdontologiaComponent,
     PeluqueriaComponent,
-    CalificacionComponent
+    CalificacionComponent,
+    ConsultaMedicaComponent
   ],
   imports: [
     BrowserModule,

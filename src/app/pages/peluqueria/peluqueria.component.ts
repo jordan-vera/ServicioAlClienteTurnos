@@ -34,7 +34,7 @@ export class PeluqueriaComponent implements OnInit {
   public persona: Persona = new Persona(0, '', '', '', '')
   public personaEmail: Persona = new Persona(0, '', '', '', '')
   public cliente: Cliente = new Cliente(0, 0, null);
-  public cantidadNumeroDiaUltimaSolicitud: number = 0;
+  public cantidadNumeroDiaUltimaSolicitud: number = 9;
 
   //datos de persona
   public identificacion: string = '';
@@ -66,7 +66,9 @@ export class PeluqueriaComponent implements OnInit {
           this.siTieneSeguroMortuorio = "existe";
           this.nombrePersonaConsultada = response.data.NOMBREUNIDO;
           this.emailPersonaConsultada = response.data.email;
-          this.actualizarEmail()
+          this.persona.NOMBRES = response.data.NOMBREUNIDO;
+          this.persona.EMAIL = response.data.email;
+          this.persona.IDENTIFICACION = response.data.identificacion;
           this.VerificarSiExitePersona();
           this.getSolicitudesAlmacenadas();
           this.actualizarEmail();
@@ -153,32 +155,40 @@ export class PeluqueriaComponent implements OnInit {
   }
 
   EnviarSolicitud(): void {
-    this.solicitudCreate.FECHATURNO = this.getFechaTurno();
-    this.solicitudCreate.FECHA = Fechac.fechaActual() + ' ' + Fechac.horaActual();
-    this.solicitudCreate.ESTADO = "Pendiente";
-    this.solicitudCreate.IDSERVICIO = 1;
-    this.solicitudCreate.IDSUCURSAL = +this.solicitudCreate.IDSUCURSAL;
-    this.spinner.show();
-    this._solicitudService.getIdClientePorIdentificacion(this.identificacion).subscribe(
-      response => {
-        this.spinner.hide();
-        this.solicitudCreate.IDCLIENTE = response.idcliente;
-        this.solicitudCreate.IDPROFESIONAL = 2;
-        this._solicitudService.createSolicitud(this.solicitudCreate).subscribe(
+    if (this.solicitudCreate.IDSUCURSAL == 0 || this.solicitudCreate.IDSUCURSAL == null) {
+      Swal.fire('Selecciona la sucursal!', '', 'error');
+    } else {
+      if (this.fechaSeleccionada == "" || this.fechaSeleccionada == null) {
+        Swal.fire('Selecciona la día!', '', 'error');
+      } else {
+        this.solicitudCreate.FECHATURNO = this.getFechaTurno();
+        this.solicitudCreate.FECHA = Fechac.fechaActual() + ' ' + Fechac.horaActual();
+        this.solicitudCreate.ESTADO = "Pendiente";
+        this.solicitudCreate.IDSERVICIO = 1;
+        this.solicitudCreate.IDSUCURSAL = +this.solicitudCreate.IDSUCURSAL;
+        this.spinner.show();
+        this._solicitudService.getIdClientePorIdentificacion(this.identificacion).subscribe(
           response => {
-            this.enviarNotificacion()
-            Swal.fire('Solicitud finalizada con exito!!', '', 'success');
-            this.limpiarForm();
-            this.getSolicitudesAlmacenadas()
+            this.spinner.hide();
+            this.solicitudCreate.IDCLIENTE = response.idcliente;
+            this.solicitudCreate.IDPROFESIONAL = 2;
+            this._solicitudService.createSolicitud(this.solicitudCreate).subscribe(
+              response => {
+                this.enviarNotificacion()
+                Swal.fire('Solicitud finalizada con exito!!', '', 'success');
+                this.limpiarForm();
+                this.getSolicitudesAlmacenadas()
+              }, error => {
+                console.log(error);
+              }
+            )
           }, error => {
+            this.spinner.hide();
             console.log(error);
           }
         )
-      }, error => {
-        this.spinner.hide();
-        console.log(error);
       }
-    )
+    }
   }
 
   enviarNotificacion(): void {
@@ -280,10 +290,21 @@ export class PeluqueriaComponent implements OnInit {
     this.spinner.show();
     this._solicitudService.getSolicitudPorFechaTurno(fecha, 1).subscribe(
       response => {
+        this.horariosDeServicio = [];
         this.spinner.hide();
         this.solicitudesRealizadas = response.response;
         if (response.error) {
-          this.horariosDeServicio = this.horariosAll
+          for (let k = 0; k < this.horariosAll.length; k++) {
+            if (Fechac.fechaActual() == fecha) {
+              var hora = +this.horariosAll[k].HORARIO.split(":")[0];
+              var horaSistema = +Fechac.horaActual().split(":")[0]
+              if (hora > horaSistema) {
+                this.horariosDeServicio.push(this.horariosAll[k]);
+              }
+            } else {
+              this.horariosDeServicio.push(this.horariosAll[k]);
+            }
+          }
         } else {
           this.horariosDeServicio = [];
           var estado = true;
@@ -294,7 +315,13 @@ export class PeluqueriaComponent implements OnInit {
               }
             }
             if (estado == true) {
-              this.horariosDeServicio.push(this.horariosAll[k]);
+              if (Fechac.fechaActual() == fecha) {
+                var hora = +this.horariosAll[k].HORARIO.split(":")[0];
+                var horaSistema = +Fechac.horaActual().split(":")[0]
+                if (hora > horaSistema) {
+                  this.horariosDeServicio.push(this.horariosAll[k]);
+                }
+              }
             }
             estado = true;
           }
@@ -363,7 +390,7 @@ export class PeluqueriaComponent implements OnInit {
             mes = Fechac.obtenerDiaDelMesMaIncremento(contador)[2];
             anio = Fechac.obtenerDiaDelMesMaIncremento(contador)[3];
           } else {
-            contador = contador + 1;
+            contador = contador + 0;
             diaExport = +Fechac.obtenerDiaDelMesMaIncremento(contador)[0];
             nombreDelDia = Fechac.obtenerDiaDelMesMaIncremento(contador)[1];
             mes = Fechac.obtenerDiaDelMesMaIncremento(contador)[2];

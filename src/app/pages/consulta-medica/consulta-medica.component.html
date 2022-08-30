@@ -1,0 +1,109 @@
+<div class="container">
+  <h4 class="border-bottom pb-2">
+    <i class="fa-solid fa-user-doctor me-2"></i> Servicio Consulta Médica
+  </h4>
+
+  <br>
+
+  <div class="row">
+    <div class="col-lg-4 border-end">
+      <label for="exampleFormControlInput1" class="form-label">Socio / Cliente</label>
+      <div class="input-group mb-3">
+        <input type="text" class="form-control" placeholder="Identificación" name="identificacion"
+          [(ngModel)]="identificacion">
+        <button class="btn btn-outline-secondary" type="button" id="button-addon2" (click)="verificarCliente()">
+          <i class="fa-solid fa-user-check"></i> Verificar
+        </button>
+      </div>
+
+      <br>
+
+      <div class="text-success border border-success p-3 rounded" *ngIf="respuesta=='ok'">
+        <i class="fa-solid fa-user-check"></i> {{nombreCliente}} - CUENTA {{estadoCuenta}}!!
+      </div>
+
+      <div class="text-warning border border-warning p-2 rounded" *ngIf="respuesta=='error'">
+        <i class="fa-solid fa-user-lock"></i> El cliente tiene la cuenta {{estadoCuenta}}!!
+      </div>
+
+      <div class="text-danger border border-danger p-2 rounded" *ngIf="respuesta=='noexiste'">
+        <i class="fa-solid fa-user-slash"></i> El cliente no existe!!
+      </div>
+
+      <br>
+
+      <div class="form-group mt-3">
+        <label for="exampleFormControlSelect1" class="mb-1 ml-1">Seleccionar Día</label>
+        <select class="form-control" id="exampleFormControlSelect1" name="fecha" [(ngModel)]="fechaSeleccionada"
+          (change)="mostrarTurnos()">
+          <option *ngFor="let x of diasDisponibles" value="{{x.dia + '#' + x.nombre + '#' + x.mes + '#' + x.anio}}">
+            {{x.nombre + ' '+ x.dia + ' de ' + x.mes + ' del ' + x.anio}}
+          </option>
+        </select>
+      </div>
+      <br>
+      <table class="table table-bordered table-sm" *ngIf="turnosShow == true">
+        <thead>
+          <tr>
+            <th scope="col" class="text-center">Turnos disponibles</th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let x of horariosDeServicio">
+            <td class="text-center">{{x.HORARIO}}</td>
+            <td class="text-center">
+              <button class="btn btn-outline-primary btn-sm" (click)="seleccionar(x.HORARIO, x.IDHORARIO)">
+                Seleccionar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="text-center border border-success pt-3 pb-2 rounded text-success"
+        *ngIf="turnoSeleccionadoShow == true">
+        <h5>Turno solicitado</h5>
+        <p>{{turnoSeleccionado}}</p>
+      </div>
+
+      <br>
+      <div class="text-end mt-1" *ngIf="respuesta == 'ok'">
+        <button class="btn btn-success" (click)="EnviarSolicitud()">
+          <i class="fa-solid fa-id-card"></i> Generar Cita
+        </button>
+      </div>
+
+    </div>
+    <div class="col-lg-8">
+      <table class="table table-striped mt-2">
+        <thead class="table-primary">
+          <tr>
+            <th scope="col">Fecha solicitud</th>
+            <th scope="col">Turno</th>
+            <th scope="col">Estado</th>
+            <th scope="col">Sucursal</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let x of solicitudesAlmacenadas">
+            <td>{{x.FECHATURNO}}</td>
+            <td>{{x.HORARIO}}</td>
+            <td>
+              <span class="badge bg-warning" *ngIf="x.ESTADO == 'Pendiente'">{{x.ESTADO}}</span>
+              <span class="badge bg-success" *ngIf="x.ESTADO == 'Finalizado'">{{x.ESTADO}}</span>
+              <span class="badge bg-danger" *ngIf="x.ESTADO == 'Ausente'">{{x.ESTADO}}</span>
+            </td>
+            <td>{{x.SUCURSAL}}</td>
+            <td >
+              <button class="btn btn-danger btn-sm" (click)="cancelarSolicitud(x.IDSOLICITUD)" *ngIf="x.ESTADO == 'Pendiente'">
+                <i class="fas fa-window-close"></i> Cancelar
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

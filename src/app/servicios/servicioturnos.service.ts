@@ -18,6 +18,10 @@ export class ServicioTurnosService {
     return this.http.get(base_url + 'persona-identificacion/' + identificacion);
   }
 
+  verificarSiTieneCuentaActiva(identificacion: string): Observable<any> {
+    return this.http.get(base_url + 'verificar-cuenta-activa/' + identificacion);
+  }
+
   createCliente(data: Cliente): Observable<any> {
     let params = JSON.stringify(data);
     let headers = new HttpHeaders().set('Content-Type', 'application/json');
@@ -50,5 +54,7 @@ export class ServicioTurnosService {
   getHorariosContador(idservicio: number): Observable<any> {
     return this.http.get(base_url + 'horarios-count/' + idservicio);
   }
+
+
 
 }
