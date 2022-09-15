@@ -16,6 +16,10 @@
         </div>
         <div class="text-success border rounded border-success p-1" *ngIf="siTieneSeguroMortuorio == 'existe'">
           <i class="fa-solid fa-user"></i> {{nombrePersonaConsultada}}
+          <hr class="pt-0 pb-0 mt-1 mb-1">
+          {{tipoSeguro}}
+          <hr class="pt-0 pb-0 mt-1 mb-1">
+          {{fechaSeguro}}
         </div>
         <div class="text-danger border rounded border-danger p-1" *ngIf="siTieneSeguroMortuorio == 'noexiste'">
           <i class="fa-solid fa-triangle-exclamation"></i> No tiene el seguro, o esta sin renovación!!

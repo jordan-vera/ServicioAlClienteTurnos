@@ -42,6 +42,8 @@ export class PeluqueriaComponent implements OnInit {
   public siTieneSeguroMortuorio: string = '';
   public nombrePersonaConsultada: string = '';
   public emailPersonaConsultada: string = '';
+  public tipoSeguro: string = '';
+  public fechaSeguro: string = '';
 
   constructor(
     private _sucursalesService: SucursalesService,
@@ -63,6 +65,12 @@ export class PeluqueriaComponent implements OnInit {
       response => {
         this.spinner.hide();
         if (response.response == "SI EXISTE") {
+          if (response.TIPO == "AHORRO JUNIOR") {
+            this.tipoSeguro = "AHORRO JUNIOR";
+          } else {
+            this.tipoSeguro = response.data.concepto;
+            this.fechaSeguro = response.data.FECHA;
+          }
           this.siTieneSeguroMortuorio = "existe";
           this.nombrePersonaConsultada = response.data.NOMBREUNIDO;
           this.emailPersonaConsultada = response.data.email;
