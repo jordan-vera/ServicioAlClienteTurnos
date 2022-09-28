@@ -3,7 +3,7 @@ export class Fechac {
     public static verificarHora(): boolean {
         var date: Date = new Date();
         var hora = date.getHours() + '';
-        if (hora >= '8' || hora < '16') {
+        if (hora >= '8' || hora < '17') {
             return true;
         } else {
             return false;

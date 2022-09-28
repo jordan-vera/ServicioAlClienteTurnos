@@ -24,7 +24,7 @@ export class OdontologiaComponent implements OnInit {
   public diasDisponibles: any[] = [];
   public solicitudesRealizadas: Solicitud[] = [];
   public solicitudesAlmacenadas: Solicitud[] = [];
-  public ultimasolicitudesAlmacenadas: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0, '', '');
+  //public ultimasolicitudesAlmacenadas: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0, '', '');
   public horariosDeServicio: Horario[] = [];
   public horariosAll: Horario[] = [];
   public horariosFiltrados: Horario[] = [];
@@ -34,7 +34,7 @@ export class OdontologiaComponent implements OnInit {
   public solicitudCreate: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0);
   public persona: Persona = new Persona(0, '', '', '', '')
   public cliente: Cliente = new Cliente(0, 0, null);
-  public cantidadNumeroDiaUltimaSolicitud: number = 0;
+  //public cantidadNumeroDiaUltimaSolicitud: number = 0;
   public personaEmail: Persona = new Persona(0, '', '', '', '')
 
   //datos de persona
@@ -44,6 +44,7 @@ export class OdontologiaComponent implements OnInit {
   public nombrePersonaConsultada: string = '';
   public emailPersonaConsultada: string = '';
   public tipoSeguro: string = '';
+  public tipo: string =  '';
   public fechaSeguro: string = '';
 
   constructor(
@@ -58,7 +59,20 @@ export class OdontologiaComponent implements OnInit {
     this.getSeisDias();
     this.getCantidadHorarios();
     this.getHorariosDiarias();
+  }
 
+  eliminarSolicitud(ideliminar): void {
+    this.spinner.show();
+    this._solicitudService.deleteSolicitud(ideliminar).subscribe(
+      response => {
+        this.spinner.hide();
+        Swal.fire('Solicitud eliminada con exito!!', '', 'success');
+        this.getSolicitudesAlmacenadas();
+      }, error => {
+        this.spinner.hide();
+        console.log(error);
+      }
+    )
   }
 
   verificarSitieneSeguroMortuorio(): void {
@@ -67,7 +81,8 @@ export class OdontologiaComponent implements OnInit {
       response => {
         this.spinner.hide();
         if (response.response == "SI EXISTE") {
-          if(response.TIPO == "AHORRO JUNIOR") {
+          this.tipo = response.TIPO;
+          if (response.TIPO == "AHORRO JUNIOR") {
             this.tipoSeguro = "AHORRO JUNIOR";
           } else {
             this.tipoSeguro = response.data.concepto;
@@ -131,11 +146,13 @@ export class OdontologiaComponent implements OnInit {
             response => {
               this.spinner.hide();
               this.solicitudesAlmacenadas = response.response;
+              /*
               if (response.response) {
                 this.getUltimaSolicitudEnviada(this.solicitudCreate.IDCLIENTE);
               } else {
-                this.cantidadNumeroDiaUltimaSolicitud = 8;
+                //this.cantidadNumeroDiaUltimaSolicitud = 8;
               }
+              */
             }, error => {
               this.spinner.hide();
               console.log(error);
@@ -149,6 +166,7 @@ export class OdontologiaComponent implements OnInit {
     )
   }
 
+  /*
   getUltimaSolicitudEnviada(idcliente: number): void {
     this.spinner.show();
     this._solicitudService.getUltimaSolicitudPorCliente(idcliente, 2).subscribe(
@@ -167,6 +185,7 @@ export class OdontologiaComponent implements OnInit {
       }
     )
   }
+  */
 
   EnviarSolicitud(): void {
     if (this.solicitudCreate.IDSUCURSAL == 0 || this.solicitudCreate.IDSUCURSAL == null) {
@@ -326,7 +345,6 @@ export class OdontologiaComponent implements OnInit {
               this.horariosDeServicio.push(this.horariosAll[k]);
             }
           }
-
         } else {
           this.horariosDeServicio = [];
           var estado = true;
@@ -340,9 +358,11 @@ export class OdontologiaComponent implements OnInit {
               if (Fechac.fechaActual() == fecha) {
                 var hora = +this.horariosAll[k].HORARIO.split(":")[0];
                 var horaSistema = +Fechac.horaActual().split(":")[0]
-                if (hora > horaSistema) {
+                if (hora >= horaSistema) {
                   this.horariosDeServicio.push(this.horariosAll[k]);
                 }
+              } else {
+                this.horariosDeServicio.push(this.horariosAll[k]);
               }
             }
             estado = true;

@@ -23,6 +23,7 @@
           <hr class="pt-0 pb-0 mt-1 mb-1">
           {{fechaSeguro}}
         </div>
+
         <div class="text-danger border rounded border-danger p-1" *ngIf="siTieneSeguroMortuorio == 'noexiste'">
           <i class="fa-solid fa-triangle-exclamation"></i> No tiene el seguro, o esta sin renovación!!
         </div>
@@ -62,24 +63,33 @@
           </tbody>
         </table>
 
+        <div class="border border-warning rounded text-center p-2 text-warning" *ngIf="!horariosDeServicio">
+          <b>No hay cupos disponibles</b>
+        </div>
+
         <div class="text-center border border-success pt-3 pb-2 rounded text-success"
           *ngIf="turnoSeleccionadoShow == true">
           <h5>Turno solicitado</h5>
           <p>{{turnoSeleccionado}}</p>
         </div>
         <button class="btn btn-primary w-100 mt-3" (click)="EnviarSolicitud()"
-          *ngIf="cantidadNumeroDiaUltimaSolicitud > 7 && siTieneSeguroMortuorio == 'existe'">
+          *ngIf="siTieneSeguroMortuorio == 'existe'">
           <i class="fas fa-calendar-check"></i> Generar Cita
         </button>
-        <span class="badge rounded-pill bg-warning text-dark p-2 w-100"
-          *ngIf="cantidadNumeroDiaUltimaSolicitud < 8 && siTieneSeguroMortuorio == 'existe'">Faltan
-          {{8 - cantidadNumeroDiaUltimaSolicitud}} días para solicitar un nuevo turno</span>
+
+        <!--div *ngIf="tipo != 'SEGURO PROASSISLIFE'">
+          <span class="badge rounded-pill bg-warning text-dark p-2 w-100"
+            *ngIf="cantidadNumeroDiaUltimaSolicitud < 8 && siTieneSeguroMortuorio == 'existe'">Faltan
+            {{8 - cantidadNumeroDiaUltimaSolicitud}} días para solicitar un nuevo turno</span>
+        </div -->
+
       </div>
     </div>
     <div class="col-lg-8">
       <table class="table table-striped mt-2 rounded">
         <thead class="table-primary rounded">
           <tr class="rounded">
+            <th scope="col">#</th>
             <th scope="col">Fecha solicitud</th>
             <th scope="col">Turno</th>
             <th scope="col">Estado</th>
@@ -89,6 +99,7 @@
         </thead>
         <tbody>
           <tr *ngFor="let x of solicitudesAlmacenadas">
+            <td>{{x.IDSOLICITUD}}</td>
             <td>{{x.FECHATURNO}}</td>
             <td>{{x.HORARIO}}</td>
             <td>
@@ -98,9 +109,13 @@
             </td>
             <td>{{x.SUCURSAL}}</td>
             <td>
-              <button class="btn btn-danger btn-sm" (click)="cancelarSolicitud(x.IDSOLICITUD)"
+              <button class="btn btn-danger btn-sm me-3" (click)="cancelarSolicitud(x.IDSOLICITUD)"
                 *ngIf="x.ESTADO == 'Pendiente'">
                 <i class="fas fa-window-close"></i> Cancelar
+              </button>
+              <button class="btn btn-danger btn-sm" (click)="eliminarSolicitud(x.IDSOLICITUD)"
+                *ngIf="x.ESTADO == 'Ausente'">
+                <i class="fas fa-trash-alt"></i> Eliminar
               </button>
             </td>
           </tr>

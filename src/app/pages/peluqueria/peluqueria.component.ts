@@ -24,7 +24,7 @@ export class PeluqueriaComponent implements OnInit {
   public diasDisponibles: any[] = [];
   public solicitudesRealizadas: Solicitud[] = [];
   public solicitudesAlmacenadas: Solicitud[] = [];
-  public ultimasolicitudesAlmacenadas: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0, '', '');
+  //public ultimasolicitudesAlmacenadas: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0, '', '');
   public horariosDeServicio: Horario[] = [];
   public horariosAll: Horario[] = [];
   public turnosShow: boolean = false;
@@ -34,7 +34,7 @@ export class PeluqueriaComponent implements OnInit {
   public persona: Persona = new Persona(0, '', '', '', '')
   public personaEmail: Persona = new Persona(0, '', '', '', '')
   public cliente: Cliente = new Cliente(0, 0, null);
-  public cantidadNumeroDiaUltimaSolicitud: number = 9;
+  //public cantidadNumeroDiaUltimaSolicitud: number = 9;
 
   //datos de persona
   public identificacion: string = '';
@@ -67,11 +67,14 @@ export class PeluqueriaComponent implements OnInit {
         if (response.response == "SI EXISTE") {
           if (response.TIPO == "AHORRO JUNIOR") {
             this.tipoSeguro = "AHORRO JUNIOR";
-          } else {
+            this.siTieneSeguroMortuorio = "existe";
+          } else if(response.TIPO == "SEGURO MORTUORIO") {
             this.tipoSeguro = response.data.concepto;
             this.fechaSeguro = response.data.FECHA;
+            this.siTieneSeguroMortuorio = "existe";
+          } else {
+            this.siTieneSeguroMortuorio = "noexiste"
           }
-          this.siTieneSeguroMortuorio = "existe";
           this.nombrePersonaConsultada = response.data.NOMBREUNIDO;
           this.emailPersonaConsultada = response.data.email;
           this.persona.NOMBRES = response.data.NOMBREUNIDO;
@@ -81,7 +84,7 @@ export class PeluqueriaComponent implements OnInit {
           this.getSolicitudesAlmacenadas();
           this.actualizarEmail();
         } else {
-          this.siTieneSeguroMortuorio = "noexiste"
+
         }
       }, error => {
         this.spinner.hide();
@@ -125,11 +128,13 @@ export class PeluqueriaComponent implements OnInit {
             response => {
               this.spinner.hide();
               this.solicitudesAlmacenadas = response.response;
+              /*
               if (response.response) {
                 this.getUltimaSolicitudEnviada(this.solicitudCreate.IDCLIENTE);
               } else {
                 this.cantidadNumeroDiaUltimaSolicitud = 8;
               }
+              */
             }, error => {
               this.spinner.hide();
               console.log(error);
@@ -143,6 +148,7 @@ export class PeluqueriaComponent implements OnInit {
     )
   }
 
+  /*
   getUltimaSolicitudEnviada(idcliente: number): void {
     this.spinner.show();
     this._solicitudService.getUltimaSolicitudPorCliente(idcliente, 1).subscribe(
@@ -162,6 +168,7 @@ export class PeluqueriaComponent implements OnInit {
     )
   }
 
+  */
   EnviarSolicitud(): void {
     if (this.solicitudCreate.IDSUCURSAL == 0 || this.solicitudCreate.IDSUCURSAL == null) {
       Swal.fire('Selecciona la sucursal!', '', 'error');
@@ -326,9 +333,11 @@ export class PeluqueriaComponent implements OnInit {
               if (Fechac.fechaActual() == fecha) {
                 var hora = +this.horariosAll[k].HORARIO.split(":")[0];
                 var horaSistema = +Fechac.horaActual().split(":")[0]
-                if (hora > horaSistema) {
+                if (hora >= horaSistema) {
                   this.horariosDeServicio.push(this.horariosAll[k]);
                 }
+              } else {
+                this.horariosDeServicio.push(this.horariosAll[k]);
               }
             }
             estado = true;
