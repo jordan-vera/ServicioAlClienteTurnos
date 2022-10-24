@@ -68,7 +68,7 @@ export class PeluqueriaComponent implements OnInit {
           if (response.TIPO == "AHORRO JUNIOR") {
             this.tipoSeguro = "AHORRO JUNIOR";
             this.siTieneSeguroMortuorio = "existe";
-          } else if(response.TIPO == "SEGURO MORTUORIO") {
+          } else if (response.TIPO == "SEGURO MORTUORIO") {
             this.tipoSeguro = response.data.concepto;
             this.fechaSeguro = response.data.FECHA;
             this.siTieneSeguroMortuorio = "existe";
