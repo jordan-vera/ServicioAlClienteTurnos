@@ -24,7 +24,7 @@ export class OdontologiaComponent implements OnInit {
   public diasDisponibles: any[] = [];
   public solicitudesRealizadas: Solicitud[] = [];
   public solicitudesAlmacenadas: Solicitud[] = [];
-  //public ultimasolicitudesAlmacenadas: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0, '', '');
+  public ultimasolicitudesAlmacenadas: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0, '', '');
   public horariosDeServicio: Horario[] = [];
   public horariosAll: Horario[] = [];
   public horariosFiltrados: Horario[] = [];
@@ -34,7 +34,7 @@ export class OdontologiaComponent implements OnInit {
   public solicitudCreate: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0);
   public persona: Persona = new Persona(0, '', '', '', '')
   public cliente: Cliente = new Cliente(0, 0, null);
-  //public cantidadNumeroDiaUltimaSolicitud: number = 0;
+  public cantidadNumeroDiaUltimaSolicitud: number = 15;
   public personaEmail: Persona = new Persona(0, '', '', '', '')
 
   //datos de persona
@@ -44,7 +44,7 @@ export class OdontologiaComponent implements OnInit {
   public nombrePersonaConsultada: string = '';
   public emailPersonaConsultada: string = '';
   public tipoSeguro: string = '';
-  public tipo: string =  '';
+  public tipo: string = '';
   public fechaSeguro: string = '';
 
   constructor(
@@ -146,13 +146,13 @@ export class OdontologiaComponent implements OnInit {
             response => {
               this.spinner.hide();
               this.solicitudesAlmacenadas = response.response;
-              /*
+
               if (response.response) {
                 this.getUltimaSolicitudEnviada(this.solicitudCreate.IDCLIENTE);
               } else {
-                //this.cantidadNumeroDiaUltimaSolicitud = 8;
+                this.cantidadNumeroDiaUltimaSolicitud = 8;
               }
-              */
+
             }, error => {
               this.spinner.hide();
               console.log(error);
@@ -166,7 +166,6 @@ export class OdontologiaComponent implements OnInit {
     )
   }
 
-  /*
   getUltimaSolicitudEnviada(idcliente: number): void {
     this.spinner.show();
     this._solicitudService.getUltimaSolicitudPorCliente(idcliente, 2).subscribe(
@@ -185,7 +184,7 @@ export class OdontologiaComponent implements OnInit {
       }
     )
   }
-  */
+
 
   EnviarSolicitud(): void {
     if (this.solicitudCreate.IDSUCURSAL == 0 || this.solicitudCreate.IDSUCURSAL == null) {
@@ -244,7 +243,13 @@ export class OdontologiaComponent implements OnInit {
 
   getFechaTurno(): string {
     var partes = this.fechaSeleccionada.split("#");
-    return partes[3] + '-' + Fechac.transformarDeMesAhNumero(partes[2]) + '-' + partes[0];
+    var dia = '';
+    if (partes[0].length == 1) {
+      dia = '0' + partes[0];
+    } else {
+      dia = partes[0];
+    }
+    return partes[3] + '-' + Fechac.transformarDeMesAhNumero(partes[2]) + '-' + dia;
   }
 
   seleccionar(fecha: string, idhorario: number): void {
@@ -327,11 +332,9 @@ export class OdontologiaComponent implements OnInit {
 
   verificarSolicitudesRealizadas(): void {
     var fecha = this.getFechaTurno();
-    this.spinner.show();
     this._solicitudService.getSolicitudPorFechaTurno(fecha, 2).subscribe(
       response => {
         this.horariosDeServicio = [];
-        this.spinner.hide();
         this.solicitudesRealizadas = response.response;
         if (response.error) {
           for (let k = 0; k < this.horariosAll.length; k++) {
@@ -357,22 +360,37 @@ export class OdontologiaComponent implements OnInit {
             if (estado == true) {
               if (Fechac.fechaActual() == fecha) {
                 var hora = +this.horariosAll[k].HORARIO.split(":")[0];
-                var horaSistema = +Fechac.horaActual().split(":")[0]
-                if (hora >= horaSistema) {
-                  this.horariosDeServicio.push(this.horariosAll[k]);
+                var horaSistema = +Fechac.horaActual().split(":")[0];
+                if (hora > horaSistema) {
+                  if (this.comparacionHorasDetalladasHorario(this.horariosAll[k].HORARIO.split("-")[0], Fechac.horaActual().split(":")[0] + ':' + Fechac.horaActual().split(":")[1])) {
+                    this.horariosDeServicio.push(this.horariosAll[k]);
+                  }
                 }
               } else {
                 this.horariosDeServicio.push(this.horariosAll[k]);
               }
             }
             estado = true;
-          }"Filibeeto"
+          }
         }
       }, error => {
-        this.spinner.hide();
         console.log(error)
       }
     )
+  }
+
+  comparacionHorasDetalladasHorario(horario: string, horaSistema: string): boolean {
+    var respuesta = false;
+    if ((+horario.split(':')[0]) == (+horaSistema.split(':')[0])) {
+      if ((+horario.split(':')[1]) > (+horaSistema.split(':')[1])) {
+        respuesta = true;
+      } else {
+        respuesta = false;
+      }
+    } else {
+      respuesta = true;
+    }
+    return respuesta;
   }
 
   getHorariosDiarias(): void {
