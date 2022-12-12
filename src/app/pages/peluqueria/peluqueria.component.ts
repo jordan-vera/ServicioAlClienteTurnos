@@ -7,6 +7,7 @@ import { Solicitud } from 'src/app/modelos/Solicitud';
 import { Sucursal } from 'src/app/modelos/Sucursal';
 import { Fechac } from 'src/app/servicios/FechaHora';
 import { HorariosService } from 'src/app/servicios/horarios.service';
+import { ServicioTurnosService } from 'src/app/servicios/servicioturnos.service';
 import { SolicitudService } from 'src/app/servicios/solicitud.service';
 import { SucursalesService } from 'src/app/servicios/sucursales.service';
 import Swal from 'sweetalert2';
@@ -49,7 +50,8 @@ export class PeluqueriaComponent implements OnInit {
     private _sucursalesService: SucursalesService,
     private _horarioService: HorariosService,
     private _solicitudService: SolicitudService,
-    private spinner: NgxSpinnerService
+    private spinner: NgxSpinnerService,
+    private _servicioTurnoService: ServicioTurnosService,
   ) { }
 
   ngOnInit(): void {
@@ -65,6 +67,7 @@ export class PeluqueriaComponent implements OnInit {
       response => {
         this.spinner.hide();
         if (response.response == "SI EXISTE") {
+          this.actualizarTipoCuentaTipoSeguro(this.identificacion, response.TIPOCUENTA, response.TIPO);
           if (response.TIPO == "AHORRO JUNIOR") {
             this.tipoSeguro = "AHORRO JUNIOR";
             this.siTieneSeguroMortuorio = "existe";
@@ -88,6 +91,15 @@ export class PeluqueriaComponent implements OnInit {
         }
       }, error => {
         this.spinner.hide();
+        console.log(error);
+      }
+    )
+  }
+
+  actualizarTipoCuentaTipoSeguro(identificacion: string, tipocuenta: string, tiposeguro: string): void {
+    this._servicioTurnoService.actualizarTipocuentaTipoSeguro(identificacion, tipocuenta, tiposeguro).subscribe(
+      response => {
+      }, error => {
         console.log(error);
       }
     )

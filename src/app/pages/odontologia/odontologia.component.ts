@@ -10,6 +10,7 @@ import { SolicitudService } from 'src/app/servicios/solicitud.service';
 import { SucursalesService } from 'src/app/servicios/sucursales.service';
 import Swal from 'sweetalert2';
 import { NgxSpinnerService } from "ngx-spinner";
+import { ServicioTurnosService } from 'src/app/servicios/servicioturnos.service';
 
 @Component({
   selector: 'app-odontologia',
@@ -51,6 +52,7 @@ export class OdontologiaComponent implements OnInit {
     private _sucursalesService: SucursalesService,
     private _horarioService: HorariosService,
     private _solicitudService: SolicitudService,
+    private _servicioTurnoService: ServicioTurnosService,
     private spinner: NgxSpinnerService
   ) { }
 
@@ -81,6 +83,7 @@ export class OdontologiaComponent implements OnInit {
       response => {
         this.spinner.hide();
         if (response.response == "SI EXISTE") {
+          this.actualizarTipoCuentaTipoSeguro(this.identificacion, response.TIPOCUENTA, response.TIPO);
           this.tipo = response.TIPO;
           if (response.TIPO == "AHORRO JUNIOR") {
             this.tipoSeguro = "AHORRO JUNIOR";
@@ -103,6 +106,15 @@ export class OdontologiaComponent implements OnInit {
         }
       }, error => {
         this.spinner.hide();
+        console.log(error);
+      }
+    )
+  }
+
+  actualizarTipoCuentaTipoSeguro(identificacion: string, tipocuenta: string, tiposeguro: string): void {
+    this._servicioTurnoService.actualizarTipocuentaTipoSeguro(identificacion, tipocuenta, tiposeguro).subscribe(
+      response => {
+      }, error => {
         console.log(error);
       }
     )

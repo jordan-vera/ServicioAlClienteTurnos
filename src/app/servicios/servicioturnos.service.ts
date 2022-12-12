@@ -14,6 +14,10 @@ export class ServicioTurnosService {
 
   constructor(private http: HttpClient) { }
 
+  actualizarTipocuentaTipoSeguro(identificacion: string, tipocuenta: string, tiposeguro): Observable<any> {
+    return this.http.get(base_url + 'actualizar-tipo-cuenta/' + identificacion + '/' + tipocuenta + '/' + tiposeguro);
+  }
+
   getPersonaIdentificacion(identificacion: string): Observable<any> {
     return this.http.get(base_url + 'persona-identificacion/' + identificacion);
   }
