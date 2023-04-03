@@ -1,13 +1,17 @@
 import { Component, OnInit } from '@angular/core';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Cliente } from 'src/app/modelos/Cliente';
+import { Especialidades } from 'src/app/modelos/Especialidades';
 import { Horario } from 'src/app/modelos/Horario';
 import { Persona } from 'src/app/modelos/Persona';
 import { Solicitud } from 'src/app/modelos/Solicitud';
+import { SolicitudEspecialidadMedica } from 'src/app/modelos/SolicitudEspecialidadMedica';
+import { EspecialidadesService } from 'src/app/servicios/especialidades.service';
 import { Fechac } from 'src/app/servicios/FechaHora';
 import { HorariosService } from 'src/app/servicios/horarios.service';
 import { ServicioTurnosService } from 'src/app/servicios/servicioturnos.service';
 import { SolicitudService } from 'src/app/servicios/solicitud.service';
+import { SolicitudEspecialidadesMedicasService } from 'src/app/servicios/solicitudespecialidadesmedicas.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -39,18 +43,47 @@ export class ConsultaMedicaComponent implements OnInit {
   public horariosDeServicio: Horario[] = [];
   public hayHorariosHoy: boolean = false;
 
+  public especialidades: Especialidades[] = [];
+  public idespecialidad: number = 0;
+
+  public solicitudEspecialidad: SolicitudEspecialidadMedica = new SolicitudEspecialidadMedica(0, 0, 0);
+
   constructor(
+    private _especialidadesService: EspecialidadesService,
     private _servicioTurnos: ServicioTurnosService,
     private _solicitudService: SolicitudService,
     private spinner: NgxSpinnerService,
     private _horarioService: HorariosService,
+    private _solicitudEspecialidadService: SolicitudEspecialidadesMedicasService
   ) { }
 
   ngOnInit(): void {
     this.getHorariosDiarias();
     this.getCantidadHorarios();
     this.getSeisDias();
-    console.log(Fechac.horaActual())
+    this.getEspecialidades();
+  }
+
+  guardarRelacionSolicitudEspecialidad(idsolicitud: number): void {
+    this.solicitudEspecialidad.idsolicitud = +idsolicitud;
+    this.solicitudEspecialidad.idespecialidad = +this.idespecialidad;
+    this._solicitudEspecialidadService.createSolicitudespecialidadesMedicas(this.solicitudEspecialidad).subscribe(
+      response => {
+
+      }, error => {
+        console.log(error);
+      }
+    )
+  }
+
+  getEspecialidades(): void {
+    this._especialidadesService.getAllEspecialidades().subscribe(
+      response => {
+        this.especialidades = response.response;
+      }, error => {
+        console.log(error);
+      }
+    )
   }
 
   seleccionar(fecha: string, idhorario: number): void {
@@ -157,14 +190,12 @@ export class ConsultaMedicaComponent implements OnInit {
       } else {
         if (dias.length == 0) {
           if (Fechac.verificarHora() == false) {
-            this.hayHorariosHoy = false;
             contador = contador + 1;
             diaExport = +Fechac.obtenerDiaDelMesMaIncremento(contador)[0];
             nombreDelDia = Fechac.obtenerDiaDelMesMaIncremento(contador)[1];
             mes = Fechac.obtenerDiaDelMesMaIncremento(contador)[2];
             anio = Fechac.obtenerDiaDelMesMaIncremento(contador)[3];
           } else {
-            this.hayHorariosHoy = true;
             contador = contador + 0;
             diaExport = +Fechac.obtenerDiaDelMesMaIncremento(contador)[0];
             nombreDelDia = Fechac.obtenerDiaDelMesMaIncremento(contador)[1];
@@ -238,9 +269,9 @@ export class ConsultaMedicaComponent implements OnInit {
           this.spinner.hide();
           this.solicitudCreate.IDCLIENTE = response.idcliente;
           this.solicitudCreate.IDPROFESIONAL = 3;
-          console.log(this.solicitudCreate)
           this._solicitudService.createSolicitud(this.solicitudCreate).subscribe(
             response => {
+              this.guardarRelacionSolicitudEspecialidad(response.response);
               this.enviarNotificacionSolicitud()
               Swal.fire('Solicitud realizada con exito!!', '', 'success');
               this.limpiarForm();
@@ -313,7 +344,7 @@ export class ConsultaMedicaComponent implements OnInit {
     this.turnosShow = false;
     this.turnoSeleccionadoShow = false;
     this.respuesta = "";
-    this.identificacion = "";
+    //this.identificacion = "";
     this.fechaSeleccionada = "";
     this.solicitudCreate = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0);
   }

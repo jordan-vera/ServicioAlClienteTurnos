@@ -1,6 +1,6 @@
 <div class="container">
   <h4 class="border-bottom pb-2">
-    <i class="fa-solid fa-user-doctor me-2"></i> Servicio Consulta Médica
+    <i class="fa-solid fa-user-doctor me-2"></i> Servicio Médico - Clínica San Jose
   </h4>
 
   <br>
@@ -8,9 +8,9 @@
   <div class="row">
     <div class="col-lg-4 border-end">
       <label for="exampleFormControlInput1" class="form-label">Socio / Cliente</label>
-      <div class="input-group mb-3">
+      <div class="input-group mb-0">
         <input type="text" class="form-control" placeholder="Identificación" name="identificacion"
-          [(ngModel)]="identificacion">
+          [(ngModel)]="identificacion" (keyup.enter)="verificarCliente()">
         <button class="btn btn-outline-secondary" type="button" id="button-addon2" (click)="verificarCliente()">
           <i class="fa-solid fa-user-check"></i> Verificar
         </button>
@@ -28,6 +28,15 @@
 
       <div class="text-danger border border-danger p-2 rounded" *ngIf="respuesta=='noexiste'">
         <i class="fa-solid fa-user-slash"></i> El cliente no existe!!
+      </div>
+
+      <div class="form-group mt-3">
+        <label for="exampleFormControlSelect1" class="mb-1 ml-1">Especialidad</label>
+        <select class="form-control" id="exampleFormControlSelect1" name="idespecialidad" [(ngModel)]="idespecialidad">
+          <option *ngFor="let x of especialidades" value="{{x.idespecialidad}}">
+            {{x.especialidad}}
+          </option>
+        </select>
       </div>
 
       <br>

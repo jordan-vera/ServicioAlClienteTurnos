@@ -10,7 +10,7 @@
         <label for="exampleFormControlInput1" class="form-label">Socio / Cliente</label>
         <div class="input-group mb-3">
           <input type="text" class="form-control" placeholder="Identificación" name="identificacion"
-            [(ngModel)]="identificacion">
+            [(ngModel)]="identificacion" (keyup.enter)="verificarSitieneSeguroMortuorio()">
           <button class="btn btn-outline-secondary" type="button" id="button-addon2"
             (click)="verificarSitieneSeguroMortuorio()">
             <i class="fa-solid fa-user-check"></i> Verificar
