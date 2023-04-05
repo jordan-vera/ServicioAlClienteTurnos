@@ -5,7 +5,7 @@ import { Especialidades } from 'src/app/modelos/Especialidades';
 import { Horario } from 'src/app/modelos/Horario';
 import { Persona } from 'src/app/modelos/Persona';
 import { Solicitud } from 'src/app/modelos/Solicitud';
-import { SolicitudEspecialidadMedica } from 'src/app/modelos/SolicitudEspecialidadMedica';
+import { SolicitudEspecialidadMedica, SolicitudEspecialidadRelacion } from 'src/app/modelos/SolicitudEspecialidadMedica';
 import { EspecialidadesService } from 'src/app/servicios/especialidades.service';
 import { Fechac } from 'src/app/servicios/FechaHora';
 import { HorariosService } from 'src/app/servicios/horarios.service';
@@ -48,6 +48,8 @@ export class ConsultaMedicaComponent implements OnInit {
 
   public solicitudEspecialidad: SolicitudEspecialidadMedica = new SolicitudEspecialidadMedica(0, 0, 0);
 
+  public solicitudEspecialidadRelacion: SolicitudEspecialidadRelacion = new SolicitudEspecialidadRelacion(0, 0, 0, 0, 0, '', '', '', 0, '', '', 0);
+
   constructor(
     private _especialidadesService: EspecialidadesService,
     private _servicioTurnos: ServicioTurnosService,
@@ -62,6 +64,18 @@ export class ConsultaMedicaComponent implements OnInit {
     this.getCantidadHorarios();
     this.getSeisDias();
     this.getEspecialidades();
+  }
+
+
+  getSolicitudesEspecialidadesRelacion(fechaturno): void {
+    this._solicitudEspecialidadService.getSolicitudRelacionpecialidadesMedicas(3, this.idespecialidad, fechaturno).subscribe(
+      response => {
+        console.log(response)
+        this.solicitudEspecialidadRelacion = response.response;
+      }, error => {
+        console.log(error);
+      }
+    )
   }
 
   guardarRelacionSolicitudEspecialidad(idsolicitud: number): void {
@@ -94,11 +108,13 @@ export class ConsultaMedicaComponent implements OnInit {
     this.solicitudCreate.IDHORARIO = idhorario;
   }
 
-
   mostrarTurnos(): void {
     this.turnoSeleccionadoShow = false;
     clearInterval(this.intervalo)
-    this.turnosShow = true;
+    if (this.idespecialidad != 0) {
+      this.turnosShow = true;
+    }
+
     this.verificarSolicitudesRealizadas()
     this.intervalo = setInterval(() => {
       this.verificarSolicitudesRealizadas()
@@ -117,52 +133,71 @@ export class ConsultaMedicaComponent implements OnInit {
   }
 
   verificarSolicitudesRealizadas(): void {
-    var fecha = this.getFechaTurno();
-    this.spinner.show();
-    this._solicitudService.getSolicitudPorFechaTurno(fecha, 3).subscribe(
-      response => {
-        this.horariosDeServicio = [];
-        this.spinner.hide();
-        this.solicitudesRealizadas = response.response;
-        if (response.error) {
-          for (let k = 0; k < this.horariosAll.length; k++) {
-            if (Fechac.fechaActual() == fecha) {
-              var hora = +this.horariosAll[k].HORARIO.split(":")[0];
-              var horaSistema = +Fechac.horaActual().split(":")[0]
-              if (hora > horaSistema) {
-                this.horariosDeServicio.push(this.horariosAll[k]);
-              }
-            } else {
-              this.horariosDeServicio.push(this.horariosAll[k]);
-            }
-          }
-        } else {
+    if (this.idespecialidad != 0) {
+      var fecha = this.getFechaTurno();
+      this.spinner.show();
+      this._solicitudEspecialidadService.getSolicitudRelacionpecialidadesMedicas(3, this.idespecialidad, fecha).subscribe(
+        response => {
           this.horariosDeServicio = [];
-          var estado = true;
-          for (let k = 0; k < this.horariosAll.length; k++) {
-            for (let i = 0; i < this.solicitudesRealizadas.length; i++) {
-              if (this.solicitudesRealizadas[i].IDHORARIO == this.horariosAll[k].IDHORARIO) {
-                estado = false;
-              }
-            }
-            if (estado == true) {
+          this.spinner.hide();
+          this.solicitudesRealizadas = response.response;
+          if (response.error) {
+            for (let k = 0; k < this.horariosAll.length; k++) {
               if (Fechac.fechaActual() == fecha) {
                 var hora = +this.horariosAll[k].HORARIO.split(":")[0];
                 var horaSistema = +Fechac.horaActual().split(":")[0]
                 if (hora > horaSistema) {
                   this.horariosDeServicio.push(this.horariosAll[k]);
                 }
+              } else {
+                this.horariosDeServicio.push(this.horariosAll[k]);
               }
-
             }
-            estado = true;
+          } else {
+            this.horariosDeServicio = [];
+            var estado = true;
+            for (let k = 0; k < this.horariosAll.length; k++) {
+              for (let i = 0; i < this.solicitudesRealizadas.length; i++) {
+                if (this.solicitudesRealizadas[i].IDHORARIO == this.horariosAll[k].IDHORARIO) {
+                  estado = false;
+                }
+              }
+              if (estado == true) {
+                if (Fechac.fechaActual() == fecha) {
+                  var hora = +this.horariosAll[k].HORARIO.split(":")[0];
+                  var horaSistema = +Fechac.horaActual().split(":")[0];
+                  if (hora > horaSistema) {
+                    if (this.comparacionHorasDetalladasHorario(this.horariosAll[k].HORARIO.split("-")[0], Fechac.horaActual().split(":")[0] + ':' + Fechac.horaActual().split(":")[1])) {
+                      this.horariosDeServicio.push(this.horariosAll[k]);
+                    }
+                  }
+                } else {
+                  this.horariosDeServicio.push(this.horariosAll[k]);
+                }
+              }
+              estado = true;
+            }
           }
+        }, error => {
+          this.spinner.hide();
+          console.log(error)
         }
-      }, error => {
-        this.spinner.hide();
-        console.log(error)
+      )
+    }
+  }
+
+  comparacionHorasDetalladasHorario(horario: string, horaSistema: string): boolean {
+    var respuesta = false;
+    if ((+horario.split(':')[0]) == (+horaSistema.split(':')[0])) {
+      if ((+horario.split(':')[1]) > (+horaSistema.split(':')[1])) {
+        respuesta = true;
+      } else {
+        respuesta = false;
       }
-    )
+    } else {
+      respuesta = true;
+    }
+    return respuesta;
   }
 
   getSeisDias(): void {
@@ -229,8 +264,6 @@ export class ConsultaMedicaComponent implements OnInit {
     this.diasDisponibles = dias;
   }
 
-
-
   verificarCliente(): void {
     this._servicioTurnos.verificarSiTieneCuentaActiva(this.identificacion).subscribe(
       response => {
@@ -296,9 +329,8 @@ export class ConsultaMedicaComponent implements OnInit {
             var email = response.response.EMAIL;
             var nombres = response.response.NOMBRES;
 
-            this._solicitudService.enviarEmailSolicitud(email, Fechac.fechaActual() + Fechac.horaActual(), "Odontología", nombres).subscribe(
+            this._solicitudService.enviarEmailSolicitud(email, Fechac.fechaActual() + Fechac.horaActual(), "Médicina", nombres).subscribe(
               response => {
-                console.log(response)
               }, error => {
                 console.log(error);
               }
@@ -339,7 +371,6 @@ export class ConsultaMedicaComponent implements OnInit {
     )
   }
 
-
   limpiarForm(): void {
     this.turnosShow = false;
     this.turnoSeleccionadoShow = false;
@@ -351,7 +382,13 @@ export class ConsultaMedicaComponent implements OnInit {
 
   getFechaTurno(): string {
     var partes = this.fechaSeleccionada.split("#");
-    return partes[3] + '-' + Fechac.transformarDeMesAhNumero(partes[2]) + '-' + partes[0];
+    var dia = '';
+    if (partes[0].length == 1) {
+      dia = '0' + partes[0];
+    } else {
+      dia = partes[0];
+    }
+    return partes[3] + '-' + Fechac.transformarDeMesAhNumero(partes[2]) + '-' + dia;
   }
 
   getSolicitudesAlmacenadas(): void {

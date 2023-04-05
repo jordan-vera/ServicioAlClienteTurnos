@@ -31,17 +31,6 @@
       </div>
 
       <div class="form-group mt-3">
-        <label for="exampleFormControlSelect1" class="mb-1 ml-1">Especialidad</label>
-        <select class="form-control" id="exampleFormControlSelect1" name="idespecialidad" [(ngModel)]="idespecialidad">
-          <option *ngFor="let x of especialidades" value="{{x.idespecialidad}}">
-            {{x.especialidad}}
-          </option>
-        </select>
-      </div>
-
-      <br>
-
-      <div class="form-group mt-3">
         <label for="exampleFormControlSelect1" class="mb-1 ml-1">Seleccionar Día</label>
         <select class="form-control" id="exampleFormControlSelect1" name="fecha" [(ngModel)]="fechaSeleccionada"
           (change)="mostrarTurnos()">
@@ -50,7 +39,23 @@
           </option>
         </select>
       </div>
+
       <br>
+
+      <div class="form-group mt-3">
+        <label for="exampleFormControlSelect1" class="mb-1 ml-1">Especialidad</label>
+        <select class="form-control" id="exampleFormControlSelect1" name="idespecialidad" [(ngModel)]="idespecialidad"
+          (change)="mostrarTurnos()">
+          <option *ngFor="let x of especialidades" value="{{x.idespecialidad}}">
+            {{x.especialidad}}
+          </option>
+        </select>
+      </div>
+
+      <br>
+
+
+
       <table class="table table-bordered table-sm" *ngIf="turnosShow == true">
         <thead>
           <tr>
@@ -105,8 +110,9 @@
               <span class="badge bg-danger" *ngIf="x.ESTADO == 'Ausente'">{{x.ESTADO}}</span>
             </td>
             <td>{{x.SUCURSAL}}</td>
-            <td >
-              <button class="btn btn-danger btn-sm" (click)="cancelarSolicitud(x.IDSOLICITUD)" *ngIf="x.ESTADO == 'Pendiente'">
+            <td>
+              <button class="btn btn-danger btn-sm" (click)="cancelarSolicitud(x.IDSOLICITUD)"
+                *ngIf="x.ESTADO == 'Pendiente'">
                 <i class="fas fa-window-close"></i> Cancelar
               </button>
             </td>

@@ -22,6 +22,10 @@ export class SolicitudEspecialidadesMedicasService {
     return this._http.get(this.url + 'solicitud-especialidad-medica/' + idsolicitud);
   }
 
+  getSolicitudRelacionpecialidadesMedicas(idservicio: number, idespecialidad: number, fechaturno: string): Observable<any> {
+    return this._http.get(this.url + 'solicitud-relacion-especialidad-medica/' + idservicio + '/' + idespecialidad + '/' + fechaturno);
+  }
+
   createSolicitudespecialidadesMedicas(data: SolicitudEspecialidadMedica): Observable<any> {
     let params = JSON.stringify(data);
     let headers = new HttpHeaders().set('Content-Type', 'application/json');
