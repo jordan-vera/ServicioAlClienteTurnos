@@ -1,0 +1,10 @@
+.fondo-login {
+  background-image: url("src/assets/fondo.jpg");
+  color: #fff;
+  background-repeat: repeat;
+  background-size: 100% 100%;
+}
+
+.usertxt {
+  text-transform: uppercase;
+}

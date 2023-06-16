@@ -22,6 +22,9 @@ import { ConsultaMedicaComponent } from './pages/consulta-medica/consulta-medica
 import { EspecialidadesService } from './servicios/especialidades.service';
 import { SolicitudEspecialidadesMedicasService } from './servicios/solicitudespecialidadesmedicas.service';
 
+import { ExportAsModule } from 'ngx-export-as';
+import { LoginService } from './servicios/login.service';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -29,7 +32,7 @@ import { SolicitudEspecialidadesMedicasService } from './servicios/solicitudespe
     OdontologiaComponent,
     PeluqueriaComponent,
     CalificacionComponent,
-    ConsultaMedicaComponent
+    ConsultaMedicaComponent,
   ],
   imports: [
     BrowserModule,
@@ -37,7 +40,8 @@ import { SolicitudEspecialidadesMedicasService } from './servicios/solicitudespe
     FormsModule,
     HttpClientModule,
     BrowserAnimationsModule,
-    NgxSpinnerModule
+    NgxSpinnerModule,
+    ExportAsModule
   ],
   providers: [
     HorariosService,
@@ -46,7 +50,8 @@ import { SolicitudEspecialidadesMedicasService } from './servicios/solicitudespe
     SucursalesService,
     { provide: LocationStrategy, useClass: HashLocationStrategy },
     EspecialidadesService,
-    SolicitudEspecialidadesMedicasService
+    SolicitudEspecialidadesMedicasService,
+    LoginService
   ],
   bootstrap: [AppComponent],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],

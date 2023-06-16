@@ -1,6 +1,6 @@
 <div class="container">
   <h4 class="border-bottom pb-2">
-    <i class="fa-solid fa-user-doctor me-2"></i> Servicio Médico - Clínica San Jose
+    <i class="fa-solid fa-user-doctor me-2"></i> Servicio Médico - Clínica San Luis
   </h4>
 
   <br>
@@ -40,7 +40,15 @@
         </select>
       </div>
 
-      <br>
+      <div class="form-group mt-3">
+        <label for="exampleFormControlSelect1" class="mb-1 ml-1">Clínica</label>
+        <select class="form-control" id="exampleFormControlSelect1" name="idclinica" [(ngModel)]="idclinica"
+          (change)="getEspecialidades()">
+          <option *ngFor="let x of clinicas" value="{{x.idclinica}}">
+            {{x.nombre}}
+          </option>
+        </select>
+      </div>
 
       <div class="form-group mt-3">
         <label for="exampleFormControlSelect1" class="mb-1 ml-1">Especialidad</label>
@@ -98,11 +106,13 @@
             <th scope="col">Estado</th>
             <th scope="col">Sucursal</th>
             <th></th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
           <tr *ngFor="let x of solicitudesAlmacenadas">
             <td>{{x.FECHATURNO}}</td>
+            <td>{{x.especialidad}}</td>
             <td>{{x.HORARIO}}</td>
             <td>
               <span class="badge bg-warning" *ngIf="x.ESTADO == 'Pendiente'">{{x.ESTADO}}</span>
@@ -111,14 +121,95 @@
             </td>
             <td>{{x.SUCURSAL}}</td>
             <td>
-              <button class="btn btn-danger btn-sm" (click)="cancelarSolicitud(x.IDSOLICITUD)"
+              <button class="btn btn-danger btn-sm me-3" (click)="cancelarSolicitud(x.IDSOLICITUD)"
                 *ngIf="x.ESTADO == 'Pendiente'">
                 <i class="fas fa-window-close"></i> Cancelar
+              </button>
+              <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#detalleTurno"
+                (click)="openModalDetalleTurno(x.IDSOLICITUD)">
+                <i class="far fa-file-alt"></i> Ver info
               </button>
             </td>
           </tr>
         </tbody>
       </table>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="modal fade" id="detalleTurno" data-backdrop="static" data-keyboard="false" tabindex="-1"
+  aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header border-bottom">
+        <h1 class="modal-title fs-5" id="staticBackdropLabel">
+          <i class="fas fa-file-alt"></i>
+          Detalle del turno
+          <span class="badge badge-warning" *ngIf="solicitudOne.ESTADO == 'Pendiente'">{{solicitudOne.ESTADO}}</span>
+          <span class="badge badge-success" *ngIf="solicitudOne.ESTADO == 'Finalizado'">{{solicitudOne.ESTADO}}</span>
+        </h1>
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal" aria-label="Close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="modal-body" id="printTurnoMedico">
+        <br>
+        <div class="text-center">
+          <img src="../../../assets/logoflm.png" style="width: 240px;">
+          <h2>Turno para atención médica</h2>
+        </div>
+
+        <div class="container">
+          <div class="row">
+            <div class="col-lg-12 pb-3 pt-3 border-bottom">
+              <b>No: </b>{{solicitudOne.IDSOLICITUD}}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6 pb-3 pt-3 border-bottom">
+              <b>Nombres: </b>{{solicitudOne.NOMBRES}}
+            </div>
+            <div class="col-lg-6 pb-3 pt-3 border-bottom">
+              <b>Identificación: </b>{{solicitudOne.IDENTIFICACION}}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6 pb-3 pt-3 border-bottom">
+              <b>Fecha: </b>{{solicitudOne.FECHATURNO}}
+            </div>
+            <div class="col-lg-6 pb-3 pt-3 border-bottom">
+              <b>Horario: </b>{{solicitudOne.HORARIO}}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-6 pb-3 pt-3 border-bottom">
+              <b>Clínica: </b>{{especialidadClinica.nombre}}
+            </div>
+            <div class="col-lg-6 pb-3 pt-3 border-bottom">
+              <b>Especialidad: </b>{{especialidadClinica.especialidad}}
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-lg-12 pb-3 pt-3 border-bottom">
+              <b>Dirección: </b>{{especialidadClinica.direccion}}
+            </div>
+          </div>
+          <br>
+          <h2>Requisitos:</h2>
+          <ul>
+            <li>
+              <p>Es requerida la presencia del socio con su respectiva cédula de identidad o pasaporte</p>
+            </li>
+          </ul>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary" (click)="descargarTurno(solicitudOne.IDSOLICITUD)">
+          <i class="far fa-file-pdf"></i> Descargar
+        </button>
+      </div>
     </div>
   </div>
 </div>

@@ -7,7 +7,7 @@ const base_url = environment.base_url_api_go_turnos;
 @Injectable({
   providedIn: 'root'
 })
-export class EspecialidadesService {
+export class ClinicaService {
 
   public url: string;
 
@@ -17,8 +17,8 @@ export class EspecialidadesService {
     this.url = base_url;
   }
 
-  getAllEspecialidades(idclinica): Observable<any> {
-    return this._http.get(this.url + 'especialidad-medica/' + idclinica);
+  getAllClinicas(): Observable<any> {
+    return this._http.get(this.url + 'clinica-info');
   }
 
 }

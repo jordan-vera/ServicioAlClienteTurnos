@@ -1,32 +1,25 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { BienvenidaComponent } from './pages/bienvenida/bienvenida.component';
-import { CalificacionComponent } from './pages/calificacion/calificacion.component';
-import { ConsultaMedicaComponent } from './pages/consulta-medica/consulta-medica.component';
-import { OdontologiaComponent } from './pages/odontologia/odontologia.component';
-import { PeluqueriaComponent } from './pages/peluqueria/peluqueria.component';
 
 const routes: Routes = [
   {
-    path: "",
-    component: BienvenidaComponent
+    path: '', loadChildren: () =>
+      import('./pages/login/login.module').then(
+        (m) => m.LoginModule
+      ),
   },
   {
-    path: "odontologia",
-    component: OdontologiaComponent
+    path: 'login', loadChildren: () =>
+      import('./pages/login/login.module').then(
+        (m) => m.LoginModule
+      ),
   },
   {
-    path: "peluqueria",
-    component: PeluqueriaComponent
+    path: 'panel', loadChildren: () =>
+      import('./pages/layout/layout.module').then(
+        (m) => m.LayoutModule
+      ),
   },
-  {
-    path: "consulta-medica",
-    component: ConsultaMedicaComponent
-  },
-  {
-    path: "calificacion/:idsolicitud/:calificacion",
-    component: CalificacionComponent
-  }
 ];
 
 @NgModule({

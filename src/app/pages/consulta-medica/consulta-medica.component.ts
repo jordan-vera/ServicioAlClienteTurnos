@@ -1,11 +1,14 @@
 import { Component, OnInit } from '@angular/core';
+import { ExportAsConfig, ExportAsService } from 'ngx-export-as';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Cliente } from 'src/app/modelos/Cliente';
+import { Clinica } from 'src/app/modelos/Clinica';
 import { Especialidades } from 'src/app/modelos/Especialidades';
 import { Horario } from 'src/app/modelos/Horario';
 import { Persona } from 'src/app/modelos/Persona';
 import { Solicitud } from 'src/app/modelos/Solicitud';
-import { SolicitudEspecialidadMedica, SolicitudEspecialidadRelacion } from 'src/app/modelos/SolicitudEspecialidadMedica';
+import { EspecialidadClinica, SolicitudEspecialidadMedica, SolicitudEspecialidadRelacion } from 'src/app/modelos/SolicitudEspecialidadMedica';
+import { ClinicaService } from 'src/app/servicios/clinica.service';
 import { EspecialidadesService } from 'src/app/servicios/especialidades.service';
 import { Fechac } from 'src/app/servicios/FechaHora';
 import { HorariosService } from 'src/app/servicios/horarios.service';
@@ -49,6 +52,16 @@ export class ConsultaMedicaComponent implements OnInit {
   public solicitudEspecialidad: SolicitudEspecialidadMedica = new SolicitudEspecialidadMedica(0, 0, 0);
 
   public solicitudEspecialidadRelacion: SolicitudEspecialidadRelacion = new SolicitudEspecialidadRelacion(0, 0, 0, 0, 0, '', '', '', 0, '', '', 0);
+  public idclinica: number = 0;
+
+  public clinicas: Clinica[] = [];
+  public especialidadClinica: EspecialidadClinica = new EspecialidadClinica(0, '', '', '');
+  public solicitudOne: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0, '', '');
+
+  exportAsConfig: ExportAsConfig = {
+    type: 'pdf',
+    elementIdOrContent: 'printTurnoMedico',
+  }
 
   constructor(
     private _especialidadesService: EspecialidadesService,
@@ -56,21 +69,61 @@ export class ConsultaMedicaComponent implements OnInit {
     private _solicitudService: SolicitudService,
     private spinner: NgxSpinnerService,
     private _horarioService: HorariosService,
-    private _solicitudEspecialidadService: SolicitudEspecialidadesMedicasService
+    private _solicitudEspecialidadService: SolicitudEspecialidadesMedicasService,
+    private _clinicaService: ClinicaService,
+    private exportAsService: ExportAsService
   ) { }
 
   ngOnInit(): void {
     this.getHorariosDiarias();
     this.getCantidadHorarios();
     this.getSeisDias();
-    this.getEspecialidades();
+    this.getClinicas();
   }
 
+  descargarTurno(idsolicitud): void {
+    this.exportAsService.save(this.exportAsConfig, 'Turno atención médica ' + idsolicitud).subscribe(() => {
+    });
+  }
+
+  openModalDetalleTurno(idsolicitud: number): void {
+    this.getDetalleTurno(idsolicitud);
+  }
+
+  getDetalleTurno(idsolicitud: number): void {
+    this._solicitudService.getSolicitudOne(idsolicitud).subscribe(
+      response => {
+        this.solicitudOne = response.response;
+        this.getEspecialidadClinica(idsolicitud);
+      }, error => {
+        console.log(error);
+      }
+    )
+  }
+
+  getEspecialidadClinica(idsolicitud: number): void {
+    this._solicitudEspecialidadService.getOneSolicitudespecialidadMedica(idsolicitud).subscribe(
+      response => {
+        this.especialidadClinica = response.response;
+      }, error => {
+        console.log(error);
+      }
+    )
+  }
+
+  getClinicas(): void {
+    this._clinicaService.getAllClinicas().subscribe(
+      response => {
+        this.clinicas = response.response;
+      }, error => {
+        console.log(error);
+      }
+    )
+  }
 
   getSolicitudesEspecialidadesRelacion(fechaturno): void {
     this._solicitudEspecialidadService.getSolicitudRelacionpecialidadesMedicas(3, this.idespecialidad, fechaturno).subscribe(
       response => {
-        console.log(response)
         this.solicitudEspecialidadRelacion = response.response;
       }, error => {
         console.log(error);
@@ -91,7 +144,7 @@ export class ConsultaMedicaComponent implements OnInit {
   }
 
   getEspecialidades(): void {
-    this._especialidadesService.getAllEspecialidades().subscribe(
+    this._especialidadesService.getAllEspecialidades(this.idclinica).subscribe(
       response => {
         this.especialidades = response.response;
       }, error => {
@@ -399,7 +452,7 @@ export class ConsultaMedicaComponent implements OnInit {
         this.solicitudCreate.IDCLIENTE = response.idcliente;
         if (!response.error) {
           this.spinner.show();
-          this._solicitudService.getSolicitudPorCliente(response.idcliente, 3).subscribe(
+          this._solicitudEspecialidadService.getAllSolicitudRelacionpecialidadesMedicas(3, this.identificacion).subscribe(
             response => {
               this.spinner.hide();
               this.solicitudesAlmacenadas = response.response;

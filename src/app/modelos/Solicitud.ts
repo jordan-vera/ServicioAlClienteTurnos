@@ -11,6 +11,8 @@ export class Solicitud {
   public IDHORARIO: number;
   public HORARIO: any;
   public SUCURSAL: any;
+  public NOMBRES: any;
+  public IDENTIFICACION: any;
 
   constructor(
       IDSOLICITUD: number,
@@ -23,7 +25,9 @@ export class Solicitud {
       FECHATURNO: any,
       IDHORARIO: number,
       HORARIO ?: any,
-      SUCURSAL ?: any
+      SUCURSAL ?: any,
+      NOMBRES ?: any,
+      IDENTIFICACION ?: any,
   ){
       this.IDSOLICITUD = IDSOLICITUD;
       this.IDPROFESIONAL = IDPROFESIONAL;
@@ -36,5 +40,7 @@ export class Solicitud {
       this.IDHORARIO = IDHORARIO;
       this.HORARIO = HORARIO;
       this.SUCURSAL = SUCURSAL;
+      this.NOMBRES = NOMBRES;
+      this.IDENTIFICACION = IDENTIFICACION;
   }
 }

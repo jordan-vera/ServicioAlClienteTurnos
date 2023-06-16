@@ -1,0 +1,41 @@
+<div class="container-fluid fondo-login mt-0 h-100" style="height:100vh !important;">
+  <div class="container text-center ">
+    <br> <br> <br>
+    <img src="../../../assets/ddddd.png" style="width: 200px;">
+    <br>
+    <h3 class="text-white">
+      SOLICITUD DE TURNOS
+    </h3>
+    <h4 class="text-white">Odontología, Peluquería y Medicina</h4>
+    <br>
+    <div class="row">
+      <div class="col-lg-4"></div>
+      <div class="col-lg-4">
+
+
+        <div class="form-floating mb-4 text-dark">
+          <input type="text" class="form-control usertxt" placeholder="Usuario" name="usuario" [(ngModel)]="usuario">
+          <label for="floatingInput">Usuario</label>
+        </div>
+
+        <div class="form-floating mb-2 text-dark">
+          <input type="password" class="form-control" placeholder="Contraseña" name="clave" [(ngModel)]="clave"
+            (keyup.enter)="login()">
+          <label for="floatingInput">Contraseña</label>
+        </div>
+
+        <br>
+        <button class="btn btn-primary w-100" (click)="login()">
+          Ingresar
+        </button>
+      </div>
+      <div class="col-lg-4"></div>
+    </div>
+
+  </div>
+
+</div>
+
+<ngx-spinner bdColor="rgba(51,51,51,0.8)" size="medium" color="#fff" type="ball-scale-multiple">
+  <p style="font-size: 20px; color: white">Loading...</p>
+</ngx-spinner>

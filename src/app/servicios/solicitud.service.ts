@@ -37,6 +37,10 @@ export class SolicitudService {
     return this._http.get(this.url + 'cliente-one/' + idpersona);
   }
 
+  getSolicitudOne(idsolicitud: number): Observable<any> {
+    return this._http.get(this.url + 'solicitud-one/' + idsolicitud);
+  }
+
   getIdClientePorIdentificacion(identificacion: string): Observable<any> {
     return this._http.get(this.url + 'cliente-id-poridentificacion/' + identificacion);
   }
