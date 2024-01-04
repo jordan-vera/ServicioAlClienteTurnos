@@ -19,7 +19,6 @@ import { NgxSpinnerModule } from "ngx-spinner";
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 import { CalificacionComponent } from './pages/calificacion/calificacion.component';
 import { ConsultaMedicaComponent } from './pages/consulta-medica/consulta-medica.component';
-import { EspecialidadesService } from './servicios/especialidades.service';
 import { SolicitudEspecialidadesMedicasService } from './servicios/solicitudespecialidadesmedicas.service';
 
 import { ExportAsModule } from 'ngx-export-as';
@@ -49,7 +48,6 @@ import { LoginService } from './servicios/login.service';
     SolicitudService,
     SucursalesService,
     { provide: LocationStrategy, useClass: HashLocationStrategy },
-    EspecialidadesService,
     SolicitudEspecialidadesMedicasService,
     LoginService
   ],

@@ -2,19 +2,17 @@ import { Component, OnInit } from '@angular/core';
 import { ExportAsConfig, ExportAsService } from 'ngx-export-as';
 import { NgxSpinnerService } from 'ngx-spinner';
 import { Cliente } from 'src/app/modelos/Cliente';
-import { Clinica } from 'src/app/modelos/Clinica';
-import { Especialidades } from 'src/app/modelos/Especialidades';
 import { Horario } from 'src/app/modelos/Horario';
 import { Persona } from 'src/app/modelos/Persona';
 import { Solicitud } from 'src/app/modelos/Solicitud';
 import { EspecialidadClinica, SolicitudEspecialidadMedica, SolicitudEspecialidadRelacion } from 'src/app/modelos/SolicitudEspecialidadMedica';
-import { ClinicaService } from 'src/app/servicios/clinica.service';
-import { EspecialidadesService } from 'src/app/servicios/especialidades.service';
+import { Sucursal } from 'src/app/modelos/Sucursal';
 import { Fechac } from 'src/app/servicios/FechaHora';
 import { HorariosService } from 'src/app/servicios/horarios.service';
 import { ServicioTurnosService } from 'src/app/servicios/servicioturnos.service';
 import { SolicitudService } from 'src/app/servicios/solicitud.service';
 import { SolicitudEspecialidadesMedicasService } from 'src/app/servicios/solicitudespecialidadesmedicas.service';
+import { SucursalesService } from 'src/app/servicios/sucursales.service';
 import Swal from 'sweetalert2';
 
 @Component({
@@ -24,6 +22,7 @@ import Swal from 'sweetalert2';
 })
 export class ConsultaMedicaComponent implements OnInit {
 
+  public sucursales: Sucursal[] = [];
   public identificacion: string = '';
   public respuesta: string = '';
   public estadoCuenta: string = '';
@@ -33,6 +32,7 @@ export class ConsultaMedicaComponent implements OnInit {
   public cliente: Cliente = new Cliente(0, 0, null);
   public personaEmail: Persona = new Persona(0, '', '', '', '')
   public solicitudCreate: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0);
+  public ultimasolicitudesAlmacenadas: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0, '', '');
   public solicitudesAlmacenadas: Solicitud[] = [];
   public fechaSeleccionada: string = "";
   public turnosShow: boolean = false;
@@ -45,16 +45,21 @@ export class ConsultaMedicaComponent implements OnInit {
   public solicitudesRealizadas: Solicitud[] = [];
   public horariosDeServicio: Horario[] = [];
   public hayHorariosHoy: boolean = false;
+  public cantidadNumeroDiaUltimaSolicitud: number = 15;
 
-  public especialidades: Especialidades[] = [];
   public idespecialidad: number = 0;
+  public tipo: string = '';
+  public tipoSeguro: string = '';
+  public fechaSeguro: string = '';
+  public siTieneSeguroMortuorio: string = '';
+  public nombrePersonaConsultada: string = '';
+  public emailPersonaConsultada: string = '';
 
   public solicitudEspecialidad: SolicitudEspecialidadMedica = new SolicitudEspecialidadMedica(0, 0, 0);
 
   public solicitudEspecialidadRelacion: SolicitudEspecialidadRelacion = new SolicitudEspecialidadRelacion(0, 0, 0, 0, 0, '', '', '', 0, '', '', 0);
   public idclinica: number = 0;
 
-  public clinicas: Clinica[] = [];
   public especialidadClinica: EspecialidadClinica = new EspecialidadClinica(0, '', '', '');
   public solicitudOne: Solicitud = new Solicitud(0, 0, 0, 0, 0, '', '', '', 0, '', '');
 
@@ -64,21 +69,20 @@ export class ConsultaMedicaComponent implements OnInit {
   }
 
   constructor(
-    private _especialidadesService: EspecialidadesService,
+    private _sucursalesService: SucursalesService,
     private _servicioTurnos: ServicioTurnosService,
     private _solicitudService: SolicitudService,
     private spinner: NgxSpinnerService,
     private _horarioService: HorariosService,
     private _solicitudEspecialidadService: SolicitudEspecialidadesMedicasService,
-    private _clinicaService: ClinicaService,
-    private exportAsService: ExportAsService
+    private exportAsService: ExportAsService,
   ) { }
 
   ngOnInit(): void {
+    this.getSucursales();
     this.getHorariosDiarias();
     this.getCantidadHorarios();
     this.getSeisDias();
-    this.getClinicas();
   }
 
   descargarTurno(idsolicitud): void {
@@ -88,6 +92,50 @@ export class ConsultaMedicaComponent implements OnInit {
 
   openModalDetalleTurno(idsolicitud: number): void {
     this.getDetalleTurno(idsolicitud);
+  }
+
+  verificarSitieneSeguroMortuorio(): void {
+    this.spinner.show();
+    this._solicitudService.verificarSeguroMortuorio(this.identificacion).subscribe(
+      response => {
+        console.log(response)
+        this.spinner.hide();
+        if (response.response == "SI EXISTE") {
+          this.actualizarTipoCuentaTipoSeguro(this.identificacion, response.TIPOCUENTA, response.TIPO);
+          this.tipo = response.TIPO;
+          if (response.TIPO == "AHORRO JUNIOR") {
+            this.tipoSeguro = "AHORRO JUNIOR";
+          } else {
+            this.tipoSeguro = response.data.concepto;
+            this.fechaSeguro = response.data.FECHA;
+          }
+          this.siTieneSeguroMortuorio = "existe";
+          this.nombrePersonaConsultada = response.data.NOMBREUNIDO;
+          this.emailPersonaConsultada = response.data.email;
+          this.persona.NOMBRES = response.data.NOMBREUNIDO;
+          this.persona.EMAIL = response.data.email;
+          this.persona.IDENTIFICACION = response.data.identificacion;
+          this.VerificarSiExitePersona();
+          this.getSolicitudesAlmacenadas();
+          this.actualizarEmail();
+          //this.actualizarEmail();
+        } else {
+          this.siTieneSeguroMortuorio = "noexiste"
+        }
+      }, error => {
+        this.spinner.hide();
+        console.log(error);
+      }
+    )
+  }
+
+  actualizarTipoCuentaTipoSeguro(identificacion: string, tipocuenta: string, tiposeguro: string): void {
+    this._servicioTurnos.actualizarTipocuentaTipoSeguro(identificacion, tipocuenta, tiposeguro).subscribe(
+      response => {
+      }, error => {
+        console.log(error);
+      }
+    )
   }
 
   getDetalleTurno(idsolicitud: number): void {
@@ -105,16 +153,6 @@ export class ConsultaMedicaComponent implements OnInit {
     this._solicitudEspecialidadService.getOneSolicitudespecialidadMedica(idsolicitud).subscribe(
       response => {
         this.especialidadClinica = response.response;
-      }, error => {
-        console.log(error);
-      }
-    )
-  }
-
-  getClinicas(): void {
-    this._clinicaService.getAllClinicas().subscribe(
-      response => {
-        this.clinicas = response.response;
       }, error => {
         console.log(error);
       }
@@ -143,16 +181,6 @@ export class ConsultaMedicaComponent implements OnInit {
     )
   }
 
-  getEspecialidades(): void {
-    this._especialidadesService.getAllEspecialidades(this.idclinica).subscribe(
-      response => {
-        this.especialidades = response.response;
-      }, error => {
-        console.log(error);
-      }
-    )
-  }
-
   seleccionar(fecha: string, idhorario: number): void {
     clearInterval(this.intervalo)
     this.turnoSeleccionado = fecha;
@@ -164,79 +192,75 @@ export class ConsultaMedicaComponent implements OnInit {
   mostrarTurnos(): void {
     this.turnoSeleccionadoShow = false;
     clearInterval(this.intervalo)
-    if (this.idespecialidad != 0) {
-      this.turnosShow = true;
-    }
-
+    this.turnosShow = true;
     this.verificarSolicitudesRealizadas()
     this.intervalo = setInterval(() => {
       this.verificarSolicitudesRealizadas()
     }, 3000);
   }
 
+
   cancelarSolicitud(idsolicitud: number): void {
+    this.spinner.show();
     this._solicitudService.deleteSolicitud(idsolicitud).subscribe(
       response => {
+        this.spinner.hide();
         Swal.fire('Solicitud cancelada con exito!!', '', 'success');
         this.getSolicitudesAlmacenadas();
       }, error => {
+        this.spinner.hide();
         console.log(error);
       }
     )
   }
 
   verificarSolicitudesRealizadas(): void {
-    if (this.idespecialidad != 0) {
-      var fecha = this.getFechaTurno();
-      this.spinner.show();
-      this._solicitudEspecialidadService.getSolicitudRelacionpecialidadesMedicas(3, this.idespecialidad, fecha).subscribe(
-        response => {
+    var fecha = this.getFechaTurno();
+    this._solicitudService.getSolicitudPorFechaTurno(fecha, 2).subscribe(
+      response => {
+        this.horariosDeServicio = [];
+        this.solicitudesRealizadas = response.response;
+        if (response.error) {
+          for (let k = 0; k < this.horariosAll.length; k++) {
+            if (Fechac.fechaActual() == fecha) {
+              var hora = +this.horariosAll[k].HORARIO.split(":")[0];
+              var horaSistema = +Fechac.horaActual().split(":")[0]
+              if (hora > horaSistema) {
+                this.horariosDeServicio.push(this.horariosAll[k]);
+              }
+            } else {
+              this.horariosDeServicio.push(this.horariosAll[k]);
+            }
+          }
+        } else {
           this.horariosDeServicio = [];
-          this.spinner.hide();
-          this.solicitudesRealizadas = response.response;
-          if (response.error) {
-            for (let k = 0; k < this.horariosAll.length; k++) {
+          var estado = true;
+          for (let k = 0; k < this.horariosAll.length; k++) {
+            for (let i = 0; i < this.solicitudesRealizadas.length; i++) {
+              if (this.solicitudesRealizadas[i].IDHORARIO == this.horariosAll[k].IDHORARIO) {
+                estado = false;
+              }
+            }
+            if (estado == true) {
               if (Fechac.fechaActual() == fecha) {
                 var hora = +this.horariosAll[k].HORARIO.split(":")[0];
-                var horaSistema = +Fechac.horaActual().split(":")[0]
+                var horaSistema = +Fechac.horaActual().split(":")[0];
                 if (hora > horaSistema) {
-                  this.horariosDeServicio.push(this.horariosAll[k]);
+                  if (this.comparacionHorasDetalladasHorario(this.horariosAll[k].HORARIO.split("-")[0], Fechac.horaActual().split(":")[0] + ':' + Fechac.horaActual().split(":")[1])) {
+                    this.horariosDeServicio.push(this.horariosAll[k]);
+                  }
                 }
               } else {
                 this.horariosDeServicio.push(this.horariosAll[k]);
               }
             }
-          } else {
-            this.horariosDeServicio = [];
-            var estado = true;
-            for (let k = 0; k < this.horariosAll.length; k++) {
-              for (let i = 0; i < this.solicitudesRealizadas.length; i++) {
-                if (this.solicitudesRealizadas[i].IDHORARIO == this.horariosAll[k].IDHORARIO) {
-                  estado = false;
-                }
-              }
-              if (estado == true) {
-                if (Fechac.fechaActual() == fecha) {
-                  var hora = +this.horariosAll[k].HORARIO.split(":")[0];
-                  var horaSistema = +Fechac.horaActual().split(":")[0];
-                  if (hora > horaSistema) {
-                    if (this.comparacionHorasDetalladasHorario(this.horariosAll[k].HORARIO.split("-")[0], Fechac.horaActual().split(":")[0] + ':' + Fechac.horaActual().split(":")[1])) {
-                      this.horariosDeServicio.push(this.horariosAll[k]);
-                    }
-                  }
-                } else {
-                  this.horariosDeServicio.push(this.horariosAll[k]);
-                }
-              }
-              estado = true;
-            }
+            estado = true;
           }
-        }, error => {
-          this.spinner.hide();
-          console.log(error)
         }
-      )
-    }
+      }, error => {
+        console.log(error)
+      }
+    )
   }
 
   comparacionHorasDetalladasHorario(horario: string, horaSistema: string): boolean {
@@ -341,58 +365,49 @@ export class ConsultaMedicaComponent implements OnInit {
   }
 
   EnviarSolicitud(): void {
-    if (this.fechaSeleccionada == "") {
-      Swal.fire('Seleccionar día !', '', 'error');
+    if (this.solicitudCreate.IDSUCURSAL == 0 || this.solicitudCreate.IDSUCURSAL == null) {
+      Swal.fire('Selecciona la sucursal!', '', 'error');
     } else {
-      this.solicitudCreate.FECHATURNO = this.getFechaTurno();
-      this.solicitudCreate.FECHA = Fechac.fechaActual() + ' ' + Fechac.horaActual();
-      this.solicitudCreate.ESTADO = "Pendiente";
-      this.solicitudCreate.IDSERVICIO = 3;
-      this.solicitudCreate.IDSUCURSAL = 1;
-      this.spinner.show();
-      this._solicitudService.getIdClientePorIdentificacion(this.identificacion).subscribe(
-        response => {
-          this.spinner.hide();
-          this.solicitudCreate.IDCLIENTE = response.idcliente;
-          this.solicitudCreate.IDPROFESIONAL = 3;
-          this._solicitudService.createSolicitud(this.solicitudCreate).subscribe(
-            response => {
-              this.guardarRelacionSolicitudEspecialidad(response.response);
-              this.enviarNotificacionSolicitud()
-              Swal.fire('Solicitud realizada con exito!!', '', 'success');
-              this.limpiarForm();
-              this.getSolicitudesAlmacenadas()
-            }, error => {
-              console.log(error);
-            }
-          )
-        }, error => {
-          this.spinner.hide();
-          console.log(error);
-        }
-      )
-    }
-  }
-
-  enviarNotificacionSolicitud(): void {
-    this._solicitudService.actualizarEmailCelular(this.identificacion).subscribe(
-      response => {
-        this._solicitudService.getpersonaPorCedula(this.identificacion).subscribe(
+      if (this.fechaSeleccionada == "" || this.fechaSeleccionada == null) {
+        Swal.fire('Selecciona la día!', '', 'error');
+      } else {
+        this.solicitudCreate.FECHATURNO = this.getFechaTurno();
+        this.solicitudCreate.FECHA = Fechac.fechaActual() + ' ' + Fechac.horaActual();
+        this.solicitudCreate.ESTADO = "Pendiente";
+        this.solicitudCreate.IDSERVICIO = 3;
+        this.solicitudCreate.IDSUCURSAL = +this.solicitudCreate.IDSUCURSAL;
+        this.spinner.show();
+        this._solicitudService.getIdClientePorIdentificacion(this.identificacion).subscribe(
           response => {
-            var email = response.response.EMAIL;
-            var nombres = response.response.NOMBRES;
-
-            this._solicitudService.enviarEmailSolicitud(email, Fechac.fechaActual() + Fechac.horaActual(), "Médicina", nombres).subscribe(
+            this.spinner.hide();
+            this.solicitudCreate.IDCLIENTE = response.idcliente;
+            this.solicitudCreate.IDPROFESIONAL = 3;
+            this._solicitudService.createSolicitud(this.solicitudCreate).subscribe(
               response => {
+                this.enviarNotificacion();
+                Swal.fire('Solicitud finalizada con exito!!', '', 'success');
+                this.limpiarForm();
+                this.getSolicitudesAlmacenadas()
               }, error => {
                 console.log(error);
               }
             )
           }, error => {
+            this.spinner.hide();
             console.log(error);
           }
         )
+      }
+    }
+  }
+
+  enviarNotificacion(): void {
+    this.spinner.show();
+    this._solicitudService.notificar(this.emailPersonaConsultada, Fechac.fechaActual() + ' ' + Fechac.horaActual(), 'Medicina General', this.nombrePersonaConsultada).subscribe(
+      response => {
+        this.spinner.hide();
       }, error => {
+        this.spinner.hide();
         console.log(error);
       }
     )
@@ -452,15 +467,40 @@ export class ConsultaMedicaComponent implements OnInit {
         this.solicitudCreate.IDCLIENTE = response.idcliente;
         if (!response.error) {
           this.spinner.show();
-          this._solicitudEspecialidadService.getAllSolicitudRelacionpecialidadesMedicas(3, this.identificacion).subscribe(
+          this._solicitudService.getSolicitudPorCliente(response.idcliente, 3).subscribe(
             response => {
               this.spinner.hide();
               this.solicitudesAlmacenadas = response.response;
+
+              if (response.response) {
+                this.getUltimaSolicitudEnviada(this.solicitudCreate.IDCLIENTE);
+              } else {
+                this.cantidadNumeroDiaUltimaSolicitud = 15;
+              }
             }, error => {
               this.spinner.hide();
               console.log(error);
             }
           )
+        }
+      }, error => {
+        this.spinner.hide();
+        console.log(error);
+      }
+    )
+  }
+
+  getUltimaSolicitudEnviada(idcliente: number): void {
+    this.spinner.show();
+    this._solicitudService.getUltimaSolicitudPorCliente(idcliente, 3).subscribe(
+      response => {
+        this.spinner.hide();
+        if (response.response) {
+          this.ultimasolicitudesAlmacenadas = response.response;
+          var diaDIferencia = Fechac.restarFechas(this.ultimasolicitudesAlmacenadas.FECHATURNO, Fechac.fechaActual())
+          this.cantidadNumeroDiaUltimaSolicitud = diaDIferencia;
+        } else {
+          this.cantidadNumeroDiaUltimaSolicitud = 8;
         }
       }, error => {
         this.spinner.hide();
@@ -527,6 +567,19 @@ export class ConsultaMedicaComponent implements OnInit {
     this._solicitudService.createCliente(this.cliente).subscribe(
       response => {
         this.spinner.hide();
+      }, error => {
+        this.spinner.hide();
+        console.log(error);
+      }
+    )
+  }
+
+  getSucursales(): void {
+    this.spinner.show();
+    this._sucursalesService.getAllOdontologia().subscribe(
+      response => {
+        this.spinner.hide();
+        this.sucursales = response.response;
       }, error => {
         this.spinner.hide();
         console.log(error);

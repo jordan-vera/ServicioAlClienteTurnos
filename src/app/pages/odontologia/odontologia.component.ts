@@ -164,7 +164,6 @@ export class OdontologiaComponent implements OnInit {
               } else {
                 this.cantidadNumeroDiaUltimaSolicitud = 8;
               }
-
             }, error => {
               this.spinner.hide();
               console.log(error);
