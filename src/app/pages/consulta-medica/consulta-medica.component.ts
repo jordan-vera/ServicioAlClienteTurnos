@@ -216,7 +216,7 @@ export class ConsultaMedicaComponent implements OnInit {
 
   verificarSolicitudesRealizadas(): void {
     var fecha = this.getFechaTurno();
-    this._solicitudService.getSolicitudPorFechaTurno(fecha, 2).subscribe(
+    this._solicitudService.getSolicitudPorFechaTurno(fecha, 3).subscribe(
       response => {
         this.horariosDeServicio = [];
         this.solicitudesRealizadas = response.response;
