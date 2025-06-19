@@ -100,12 +100,12 @@
               <span class="badge bg-danger" *ngIf="x.ESTADO == 'Ausente'">{{x.ESTADO}}</span>
             </td>
             <td>{{x.SUCURSAL}}</td>
-            <td>
+            <!-- <td>
               <button class="btn btn-danger btn-sm" (click)="cancelarSolicitud(x.IDSOLICITUD)"
                 *ngIf="x.ESTADO == 'Pendiente'">
                 <i class="fas fa-window-close"></i> Cancelar
               </button>
-            </td>
+            </td> -->
           </tr>
         </tbody>
       </table>
